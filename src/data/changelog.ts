@@ -5,6 +5,16 @@ import {
 
 const rawChangelogEntries = [
   {
+    date: "2026-08-23",
+    title: "Privacy Policy を追加",
+    description:
+      "コメント機能で利用する GitHub Discussions など、サイトが扱う情報についての案内を追加しました。",
+    link: {
+      kind: "internal",
+      path: "privacy/",
+    },
+  },
+  {
     date: "2026-08-22",
     title: "Notes にコメント欄を追加",
     description:

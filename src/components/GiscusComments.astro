@@ -1,6 +1,7 @@
 ---
 import { giscus } from "../config/site";
 
+const privacyUrl = `${import.meta.env.BASE_URL}privacy/`;
 const contactUrl = `${import.meta.env.BASE_URL}contact/`;
 ---
 
@@ -27,8 +28,10 @@ const contactUrl = `${import.meta.env.BASE_URL}contact/`;
     <li>投稿には GitHub アカウントが必要です。</li>
     <li>コメントとリアクションは GitHub Discussions 上で公開されます。</li>
     <li>
-      訂正・削除に関するご連絡は、<a href={contactUrl}>Contact</a
-      >からお願いします。
+      情報の取扱いは <a href={privacyUrl}>Privacy Policy</a> をご確認ください。
+    </li>
+    <li>
+      訂正・削除に関するご連絡は <a href={contactUrl}>Contact</a> からお願いします。
     </li>
   </ul>
 </section>
