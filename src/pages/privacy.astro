@@ -1,0 +1,169 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { privacyPolicies, site } from "../config/site";
+
+const baseUrl = import.meta.env.BASE_URL;
+const contactUrl = `${baseUrl}contact/`;
+---
+
+<Layout
+  title={`Privacy Policy | ${site.name}`}
+  description="Working Corgi が扱う情報と、コメント機能で利用する外部サービスについて説明します。"
+>
+  <article class="privacy">
+    <header class="page__hero">
+      <p class="page__eyebrow">YOUR PRIVACY</p>
+      <h1 class="page__title">Privacy Policy</h1>
+      <p class="page__lead">
+        Working
+        Corgi（以下「当サイト」）が扱う情報と、利用している外部サービスについて説明します。
+      </p>
+    </header>
+
+    <div class="privacy__content">
+      <ol class="privacy__sections">
+        <li class="privacy__section">
+          <h2>当サイトが扱う情報</h2>
+          <p>
+            当サイトでは、独自のログイン機能、ユーザー管理、コメント用データベースを運用しておらず、アクセス解析も利用していません。
+          </p>
+          <p>
+            Notes のコメント欄には、GitHub Discussions を利用する giscus
+            を使用しています。
+          </p>
+        </li>
+
+        <li class="privacy__section">
+          <h2>Notes のコメントとリアクション</h2>
+          <ul>
+            <li>投稿には GitHub アカウントが必要です。</li>
+            <li>
+              コメントとリアクションは GitHub Discussions
+              に保存され、公開されます。個人情報や公開したくない情報は投稿しないでください。
+            </li>
+            <li>
+              情報の取扱いについては、<a
+                href={privacyPolicies.github.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                >{privacyPolicies.github.label}<span class="visually-hidden"
+                  >（新しいタブで開く）</span
+                ></a
+              >と<a
+                href={privacyPolicies.giscus.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                >{privacyPolicies.giscus.label}<span class="visually-hidden"
+                  >（新しいタブで開く）</span
+                ></a
+              >をご確認ください。
+            </li>
+          </ul>
+        </li>
+
+        <li class="privacy__section">
+          <h2>お問い合わせ</h2>
+          <p>
+            本サイトに関するお問い合わせや、Notes のコメントの訂正・削除は <a
+              href={contactUrl}>Contact</a
+            > ページからお願いします。
+          </p>
+        </li>
+
+        <li class="privacy__section">
+          <h2>本ポリシーの見直し</h2>
+          <p>
+            機能や外部サービスの変更にあわせて、必要に応じて本ポリシーを見直します。
+          </p>
+        </li>
+      </ol>
+
+      <p class="privacy__updated">
+        最終更新日: <time datetime="2026-08-23">2026年8月23日</time>
+      </p>
+    </div>
+  </article>
+</Layout>
+
+<style lang="scss">
+  .privacy {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+
+  .privacy__content {
+    display: grid;
+    padding: var(--space-2xl);
+    counter-reset: privacy-section;
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    border-radius: var(--radius-sm);
+  }
+
+  .privacy__sections {
+    display: grid;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .privacy__section {
+    padding-block: var(--space-xl);
+    counter-increment: privacy-section;
+  }
+
+  .privacy__section + .privacy__section {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .privacy__section:first-child {
+    padding-top: 0;
+  }
+
+  .privacy__section::before {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-accent-strong);
+    letter-spacing: 0.08em;
+    content: "SECTION 0" counter(privacy-section);
+  }
+
+  .privacy__section h2 {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+  }
+
+  .privacy__section p,
+  .privacy__section ul {
+    margin-top: var(--space-md);
+  }
+
+  .privacy__section ul {
+    padding-left: 1.25em;
+  }
+
+  .privacy__section li + li {
+    margin-top: var(--space-xs);
+  }
+
+  .privacy__section a {
+    color: var(--color-link);
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.16em;
+  }
+
+  .privacy__updated {
+    padding-top: var(--space-xl);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    text-align: right;
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (width <= 40rem) {
+    .privacy__content {
+      padding: var(--space-lg);
+    }
+  }
+</style>

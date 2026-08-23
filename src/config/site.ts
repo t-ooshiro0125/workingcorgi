@@ -22,6 +22,17 @@ export const giscus = {
   lang: "ja",
 } as const;
 
+export const privacyPolicies = {
+  github: {
+    label: "GitHub のプライバシーに関する声明",
+    url: "https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement",
+  },
+  giscus: {
+    label: "giscus のプライバシーポリシー",
+    url: "https://github.com/giscus/giscus/blob/main/PRIVACY-POLICY.md",
+  },
+} as const;
+
 export const profiles = {
   github: {
     label: "GitHub",
@@ -44,6 +55,7 @@ const navigationLinks = {
   notes: { label: "Notes", path: "notes/" },
   contact: { label: "Contact", path: "contact/" },
   changelog: { label: "Changelog", path: "changelog/" },
+  privacy: { label: "Privacy Policy", path: "privacy/" },
 } as const;
 
 export const homeNavigationItems = [
@@ -76,4 +88,5 @@ export const footerNavigationItems = [
   navigationLinks.notes,
   navigationLinks.changelog,
   navigationLinks.contact,
+  navigationLinks.privacy,
 ] as const;
