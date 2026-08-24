@@ -44,6 +44,21 @@
 - VS Code では Stylelint 拡張により、SCSS と Astro 内の SCSS を診断する。
 - 保存時の自動修正を有効にしているため、プロパティ順の修正は通常手動で行わない。
 
+## Google Analytics
+
+### 測定 ID
+
+- 測定 ID（`PUBLIC_GA_MEASUREMENT_ID`）は以下の場所で管理する。
+  - ローカル: `.env`
+  - デプロイ: GitHub の Repository variable
+- 測定 ID が未設定の場合、Google タグと同意バナーを出力しない。
+- 測定 ID は公開情報。認証情報は Git 管理しない。
+
+### 同意管理
+
+- 厳守: 利用者が許可するまで計測しない。
+- 同意はブラウザに保存し、Privacy Policy の「計測のカスタマイズ」から変更できる。
+
 ## ブランチと Pull Request
 
 - `main` への直接 push はしない。Issue に対応する変更はブランチで行い、Pull Request を通して `main` へマージする。

@@ -1,0 +1,178 @@
+<section class="analytics-consent-settings">
+  <h3 class="analytics-consent-settings__heading">計測のカスタマイズ</h3>
+  <p class="analytics-consent-settings__lead">
+    以下の設定をオン・オフすることで、計測内容を変更できます。<br
+    />設定はいつでも変更できます。
+  </p>
+  <div class="analytics-consent-settings__item">
+    <div class="analytics-consent-settings__content">
+      <p
+        id="analytics-consent-settings-title"
+        class="analytics-consent-settings__title"
+      >
+        アクセス解析（Google Analytics）
+      </p>
+      <p
+        id="analytics-consent-settings-description"
+        class="analytics-consent-settings__description"
+      >
+        サイトの利用状況を分析し、改善に役立てます。
+      </p>
+    </div>
+    <button
+      class="analytics-consent-settings__toggle"
+      type="button"
+      role="switch"
+      aria-checked="false"
+      aria-labelledby="analytics-consent-settings-title"
+      aria-describedby="analytics-consent-settings-description"
+      data-analytics-consent-toggle></button>
+  </div>
+</section>
+
+<script is:inline>
+  const storageKey = "workingcorgi-analytics-consent";
+  const granted = "granted";
+  const denied = "denied";
+  const toggle = document.querySelector("[data-analytics-consent-toggle]");
+
+  const readConsent = () => {
+    try {
+      return localStorage.getItem(storageKey);
+    } catch {
+      return null;
+    }
+  };
+
+  const saveConsent = (consent) => {
+    try {
+      localStorage.setItem(storageKey, consent);
+    } catch {
+      return;
+    }
+  };
+
+  let consent = readConsent();
+
+  const update = () =>
+    toggle?.setAttribute("aria-checked", String(consent === granted));
+
+  const syncConsent = (value) => {
+    consent = value === granted || value === denied ? value : null;
+    update();
+  };
+
+  update();
+
+  toggle?.addEventListener("click", () => {
+    syncConsent(consent === granted ? denied : granted);
+
+    saveConsent(consent);
+    window.dispatchEvent(
+      new CustomEvent("analytics-consent-change", { detail: consent }),
+    );
+  });
+  window.addEventListener("analytics-consent-change", (event) => {
+    syncConsent(event.detail);
+  });
+  window.addEventListener("storage", (event) => {
+    if (
+      event.storageArea !== localStorage ||
+      (event.key !== storageKey && event.key !== null)
+    ) {
+      return;
+    }
+
+    syncConsent(event.newValue);
+  });
+</script>
+
+<style lang="scss">
+  .analytics-consent-settings {
+    padding: var(--space-lg);
+    margin-top: var(--space-xl);
+    background: color-mix(in srgb, var(--color-accent-soft) 35%, transparent);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .analytics-consent-settings__heading {
+    font-size: 1rem;
+  }
+
+  .analytics-consent-settings__lead {
+    margin-top: var(--space-sm);
+    font-size: 0.875rem;
+  }
+
+  .analytics-consent-settings__item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-lg);
+    margin-top: var(--space-sm);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .analytics-consent-settings__content {
+    min-width: 0;
+  }
+
+  .analytics-consent-settings__title {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .analytics-consent-settings__description {
+    margin-top: var(--space-2xs);
+    font-size: 0.875rem;
+  }
+
+  .analytics-consent-settings__toggle {
+    width: 3rem;
+    height: 1.75rem;
+    padding: 0.1875rem;
+    appearance: none;
+    cursor: pointer;
+    background: var(--color-border);
+    border: 0;
+    border-radius: 999px;
+  }
+
+  .analytics-consent-settings__toggle::before {
+    display: block;
+    width: 1.375rem;
+    height: 1.375rem;
+    content: "";
+    background: var(--color-surface);
+    border-radius: 50%;
+    transition: transform 160ms ease;
+  }
+
+  .analytics-consent-settings__toggle[aria-checked="true"] {
+    background: var(--color-accent-strong);
+  }
+
+  .analytics-consent-settings__toggle[aria-checked="true"]::before {
+    transform: translateX(1.25rem);
+  }
+
+  @media (width <= 30rem) {
+    .analytics-consent-settings__item {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .analytics-consent-settings__toggle {
+      justify-self: end;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .analytics-consent-settings__toggle::before {
+      transition: none;
+    }
+  }
+</style>

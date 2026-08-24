@@ -45,6 +45,8 @@ jobs:
         run: npm test
 
       - name: Build site
+        env:
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
         run: npm run build
 
       - name: Configure GitHub Pages

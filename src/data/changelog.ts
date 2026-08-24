@@ -5,6 +5,16 @@ import {
 
 const rawChangelogEntries = [
   {
+    date: "2026-08-24",
+    title: "アクセス解析を追加",
+    description:
+      "Google Analytics によるアクセス解析を追加し、Privacy Policy から計測設定を変更できるようにしました。",
+    link: {
+      kind: "internal",
+      path: "privacy/",
+    },
+  },
+  {
     date: "2026-08-23",
     title: "Privacy Policy を追加",
     description:

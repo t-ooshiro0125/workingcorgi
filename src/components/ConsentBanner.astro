@@ -1,0 +1,267 @@
+---
+interface Props {
+  measurementId: string;
+  privacyUrl: string;
+}
+
+const { measurementId, privacyUrl } = Astro.props as Props;
+---
+
+<aside
+  class="consent-banner"
+  aria-labelledby="consent-banner-title"
+  data-consent-banner
+  hidden
+>
+  <h2 id="consent-banner-title" class="consent-banner__title">
+    アクセス解析について
+  </h2>
+  <p class="consent-banner__description">
+    このサイトでは、利用状況の把握とサイト改善のため Google Analytics
+    を使用します。許可すると、Cookie を使用してアクセスを計測します。
+  </p>
+  <p class="consent-banner__privacy">
+    詳しくは <a class="consent-banner__link" href={privacyUrl}>Privacy Policy</a
+    >
+    をご確認ください。
+  </p>
+  <div class="consent-banner__actions">
+    <button class="consent-banner__button" type="button" data-consent-accept>
+      許可する
+    </button>
+    <button
+      class="consent-banner__button consent-banner__button--secondary"
+      type="button"
+      data-consent-reject
+    >
+      許可しない
+    </button>
+  </div>
+</aside>
+
+<script is:inline define:vars={{ measurementId }}>
+  const storageKey = "workingcorgi-analytics-consent";
+  const granted = "granted";
+  const denied = "denied";
+  const banner = document.querySelector("[data-consent-banner]");
+  const googleWindow = window;
+  let hideTimer;
+
+  const isConsent = (value) => value === granted || value === denied;
+
+  const readConsent = () => {
+    try {
+      return localStorage.getItem(storageKey);
+    } catch {
+      return null;
+    }
+  };
+
+  const showBanner = () => {
+    if (!(banner instanceof HTMLElement)) return;
+
+    window.clearTimeout(hideTimer);
+    banner.hidden = false;
+    requestAnimationFrame(() =>
+      banner.classList.add("consent-banner--visible"),
+    );
+  };
+  const hideBanner = () => {
+    if (!(banner instanceof HTMLElement)) return;
+
+    window.clearTimeout(hideTimer);
+    banner.classList.remove("consent-banner--visible");
+    hideTimer = window.setTimeout(() => {
+      banner.hidden = true;
+      hideTimer = undefined;
+    }, 200);
+  };
+
+  const rejectAnalytics = () => {
+    googleWindow["ga-disable-" + measurementId] = true;
+    googleWindow.gtag?.("consent", "update", {
+      analytics_storage: denied,
+      ad_storage: denied,
+      ad_user_data: denied,
+      ad_personalization: denied,
+    });
+  };
+
+  const enableAnalytics = () => {
+    googleWindow["ga-disable-" + measurementId] = false;
+    if (googleWindow.googleAnalyticsLoaded) {
+      googleWindow.gtag?.("consent", "update", {
+        analytics_storage: granted,
+      });
+      return;
+    }
+
+    googleWindow.googleAnalyticsLoaded = true;
+    googleWindow.dataLayer = googleWindow.dataLayer || [];
+
+    function gtag() {
+      googleWindow.dataLayer.push(arguments);
+    }
+
+    googleWindow.gtag = gtag;
+    gtag("consent", "default", {
+      analytics_storage: denied,
+      ad_storage: denied,
+      ad_user_data: denied,
+      ad_personalization: denied,
+    });
+    gtag("consent", "update", { analytics_storage: granted });
+    gtag("js", new Date());
+    gtag("config", measurementId);
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=" + measurementId;
+    document.head.append(script);
+  };
+
+  const applyConsent = (consent, notify = true) => {
+    if (!isConsent(consent)) return;
+
+    if (consent === granted) {
+      enableAnalytics();
+    } else {
+      rejectAnalytics();
+    }
+    if (notify) {
+      window.dispatchEvent(
+        new CustomEvent("analytics-consent-change", { detail: consent }),
+      );
+    }
+    hideBanner();
+  };
+
+  const setConsent = (consent) => {
+    if (!isConsent(consent)) return;
+
+    try {
+      localStorage.setItem(storageKey, consent);
+    } catch {
+      // 記憶域が使えない場合も、このページの選択は反映する。
+    }
+    applyConsent(consent);
+  };
+
+  const consent = readConsent();
+
+  if (isConsent(consent)) {
+    applyConsent(consent, false);
+  } else {
+    showBanner();
+  }
+
+  document
+    .querySelector("[data-consent-accept]")
+    ?.addEventListener("click", () => setConsent(granted));
+  document
+    .querySelector("[data-consent-reject]")
+    ?.addEventListener("click", () => setConsent(denied));
+
+  window.addEventListener("analytics-consent-change", (event) => {
+    applyConsent(event.detail, false);
+  });
+  window.addEventListener("storage", (event) => {
+    if (
+      event.storageArea !== localStorage ||
+      (event.key !== storageKey && event.key !== null)
+    ) {
+      return;
+    }
+
+    if (isConsent(event.newValue)) {
+      applyConsent(event.newValue, false);
+      return;
+    }
+
+    rejectAnalytics();
+    showBanner();
+  });
+</script>
+
+<style lang="scss">
+  .consent-banner {
+    position: fixed;
+    right: var(--space-md);
+    bottom: var(--space-md);
+    z-index: 2;
+    width: min(calc(100% - var(--space-xl)), 32rem);
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    opacity: 0;
+    transform: translateY(var(--space-md));
+    transition:
+      opacity 200ms ease,
+      transform 200ms ease;
+  }
+
+  .consent-banner--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .consent-banner__title {
+    font-size: 1.125rem;
+  }
+
+  .consent-banner__description,
+  .consent-banner__privacy {
+    margin-top: var(--space-sm);
+    font-size: 0.875rem;
+  }
+
+  .consent-banner__link {
+    color: var(--color-link);
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.16em;
+  }
+
+  .consent-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+  }
+
+  .consent-banner__button {
+    min-height: 2.75rem;
+    padding: var(--space-xs) var(--space-md);
+    font-weight: 700;
+    color: var(--color-surface);
+    background: var(--color-accent-strong);
+    border: 1px solid var(--color-accent-strong);
+    border-radius: var(--radius-sm);
+  }
+
+  .consent-banner__button--secondary {
+    color: var(--color-text);
+    background: var(--color-surface);
+    border-color: var(--color-border);
+  }
+
+  @media (width <= 40rem) {
+    .consent-banner {
+      right: var(--space-md);
+      width: auto;
+      padding: var(--space-md);
+    }
+
+    .consent-banner__button {
+      flex: 1 1 auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .consent-banner {
+      transition: none;
+    }
+  }
+</style>
