@@ -31,6 +31,10 @@ export const privacyPolicies = {
     label: "giscus のプライバシーポリシー",
     url: "https://github.com/giscus/giscus/blob/main/PRIVACY-POLICY.md",
   },
+  google: {
+    label: "Google による情報の扱い",
+    url: "https://policies.google.com/technologies/partner-sites?hl=ja",
+  },
 } as const;
 
 export const profiles = {

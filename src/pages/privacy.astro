@@ -1,4 +1,5 @@
 ---
+import AnalyticsConsentSettings from "../components/AnalyticsConsentSettings.astro";
 import Layout from "../layouts/Layout.astro";
 import { privacyPolicies, site } from "../config/site";
 
@@ -8,7 +9,7 @@ const contactUrl = `${baseUrl}contact/`;
 
 <Layout
   title={`Privacy Policy | ${site.name}`}
-  description="Working Corgi が扱う情報と、コメント機能で利用する外部サービスについて説明します。"
+  description="Working Corgi が扱う情報と、利用している外部サービスについて説明します。"
 >
   <article class="privacy">
     <header class="page__hero">
@@ -25,12 +26,38 @@ const contactUrl = `${baseUrl}contact/`;
         <li class="privacy__section">
           <h2>当サイトが扱う情報</h2>
           <p>
-            当サイトでは、独自のログイン機能、ユーザー管理、コメント用データベースを運用しておらず、アクセス解析も利用していません。
+            当サイトでは、独自のログイン機能、ユーザー管理、コメント用データベースを運用していません。
           </p>
           <p>
             Notes のコメント欄には、GitHub Discussions を利用する giscus
             を使用しています。
           </p>
+        </li>
+
+        <li class="privacy__section">
+          <h2>アクセス解析</h2>
+          <p>
+            当サイトでは、利用状況の把握とサイト改善のため、利用者の同意を得た場合に
+            Google Analytics を使用します。
+          </p>
+          <ul>
+            <li>
+              閲覧したページ、ブラウザ・端末の情報、概算の地域、Cookie
+              などの識別子を収集します。
+            </li>
+            <li>広告連携や、個人を特定する情報の送信は行いません。</li>
+            <li>
+              Google による情報の取扱いについては、<a
+                href={privacyPolicies.google.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                >{privacyPolicies.google.label}<span class="visually-hidden"
+                  >（新しいタブで開く）</span
+                ></a
+              >をご確認ください。
+            </li>
+          </ul>
+          <AnalyticsConsentSettings />
         </li>
 
         <li class="privacy__section">
@@ -79,7 +106,7 @@ const contactUrl = `${baseUrl}contact/`;
       </ol>
 
       <p class="privacy__updated">
-        最終更新日: <time datetime="2026-08-23">2026年8月23日</time>
+        最終更新日: <time datetime="2026-08-24">2026年8月24日</time>
       </p>
     </div>
   </article>
