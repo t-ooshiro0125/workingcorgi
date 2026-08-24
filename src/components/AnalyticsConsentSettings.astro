@@ -51,23 +51,26 @@
     }
   };
 
-  const update = (consent) =>
+  let consent = readConsent();
+
+  const update = () =>
     toggle?.setAttribute("aria-checked", String(consent === granted));
 
-  update(readConsent());
+  update();
 
   toggle?.addEventListener("click", () => {
-    const consent = readConsent() === granted ? "denied" : granted;
+    consent = consent === granted ? "denied" : granted;
 
     saveConsent(consent);
-    update(consent);
+    update();
     window.dispatchEvent(
       new CustomEvent("analytics-consent-change", { detail: consent }),
     );
   });
-  window.addEventListener("analytics-consent-change", (event) =>
-    update(event.detail),
-  );
+  window.addEventListener("analytics-consent-change", (event) => {
+    consent = event.detail;
+    update();
+  });
 </script>
 
 <style lang="scss">
