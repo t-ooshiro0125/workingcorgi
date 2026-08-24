@@ -33,6 +33,7 @@
 <script is:inline>
   const storageKey = "workingcorgi-analytics-consent";
   const granted = "granted";
+  const denied = "denied";
   const toggle = document.querySelector("[data-analytics-consent-toggle]");
 
   const readConsent = () => {
@@ -56,20 +57,33 @@
   const update = () =>
     toggle?.setAttribute("aria-checked", String(consent === granted));
 
+  const syncConsent = (value) => {
+    consent = value === granted || value === denied ? value : null;
+    update();
+  };
+
   update();
 
   toggle?.addEventListener("click", () => {
-    consent = consent === granted ? "denied" : granted;
+    syncConsent(consent === granted ? denied : granted);
 
     saveConsent(consent);
-    update();
     window.dispatchEvent(
       new CustomEvent("analytics-consent-change", { detail: consent }),
     );
   });
   window.addEventListener("analytics-consent-change", (event) => {
-    consent = event.detail;
-    update();
+    syncConsent(event.detail);
+  });
+  window.addEventListener("storage", (event) => {
+    if (
+      event.storageArea !== localStorage ||
+      (event.key !== storageKey && event.key !== null)
+    ) {
+      return;
+    }
+
+    syncConsent(event.newValue);
   });
 </script>
 

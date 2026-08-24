@@ -47,6 +47,16 @@ const { measurementId, privacyUrl } = Astro.props as Props;
   const googleWindow = window;
   let hideTimer;
 
+  const isConsent = (value) => value === granted || value === denied;
+
+  const readConsent = () => {
+    try {
+      return localStorage.getItem(storageKey);
+    } catch {
+      return null;
+    }
+  };
+
   const showBanner = () => {
     if (!(banner instanceof HTMLElement)) return;
 
@@ -110,16 +120,14 @@ const { measurementId, privacyUrl } = Astro.props as Props;
     document.head.append(script);
   };
 
-  const setConsent = (consent, notify = true) => {
-    if (consent !== granted && consent !== denied) return;
+  const applyConsent = (consent, notify = true) => {
+    if (!isConsent(consent)) return;
 
-    try {
-      localStorage.setItem(storageKey, consent);
-    } catch {
-      // 記憶域が使えない場合も、このページの選択は反映する。
+    if (consent === granted) {
+      enableAnalytics();
+    } else {
+      rejectAnalytics();
     }
-    if (consent === granted) enableAnalytics();
-    if (consent === denied) rejectAnalytics();
     if (notify) {
       window.dispatchEvent(
         new CustomEvent("analytics-consent-change", { detail: consent }),
@@ -128,19 +136,21 @@ const { measurementId, privacyUrl } = Astro.props as Props;
     hideBanner();
   };
 
-  let consent = null;
-  try {
-    consent = localStorage.getItem(storageKey);
-  } catch {
-    showBanner();
-  }
+  const setConsent = (consent) => {
+    if (!isConsent(consent)) return;
 
-  if (consent === granted) {
-    enableAnalytics();
-    hideBanner();
-  } else if (consent === denied) {
-    rejectAnalytics();
-    hideBanner();
+    try {
+      localStorage.setItem(storageKey, consent);
+    } catch {
+      // 記憶域が使えない場合も、このページの選択は反映する。
+    }
+    applyConsent(consent);
+  };
+
+  const consent = readConsent();
+
+  if (isConsent(consent)) {
+    applyConsent(consent, false);
   } else {
     showBanner();
   }
@@ -153,7 +163,23 @@ const { measurementId, privacyUrl } = Astro.props as Props;
     ?.addEventListener("click", () => setConsent(denied));
 
   window.addEventListener("analytics-consent-change", (event) => {
-    setConsent(event.detail, false);
+    applyConsent(event.detail, false);
+  });
+  window.addEventListener("storage", (event) => {
+    if (
+      event.storageArea !== localStorage ||
+      (event.key !== storageKey && event.key !== null)
+    ) {
+      return;
+    }
+
+    if (isConsent(event.newValue)) {
+      applyConsent(event.newValue, false);
+      return;
+    }
+
+    rejectAnalytics();
+    showBanner();
   });
 </script>
 
