@@ -17,6 +17,42 @@
   docker volume rm codex-private-state
   ```
 
+## GitHub CLI
+
+- Dev Container には GitHub CLI（`gh`）が含まれている。
+- 原則: 認証情報は Docker ホストごとの `github-cli-private-state` ボリュームに保存する。
+- 禁止: 認証情報を Git 管理・共有しない。
+
+### 初期設定
+
+```sh
+gh auth login
+gh auth status
+```
+
+### 利用例
+
+- リポジトリ・Issue の確認
+
+  ```sh
+  gh repo view
+  gh issue list
+  ```
+
+- PR のチェック結果の確認（現在のブランチに PR がある場合のみ）
+
+  ```sh
+  gh pr checks
+  ```
+
+### 認証情報の削除
+
+- 注意: ボリュームを削除すると認証状態が失われる。
+
+```sh
+docker volume rm github-cli-private-state
+```
+
 ## 実装と確認
 
 - 実装前に `docs/product.md` と `docs/conventions.md` を確認する。
