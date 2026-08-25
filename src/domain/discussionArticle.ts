@@ -39,7 +39,7 @@ interface ArticleSections {
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const articleSectionPattern =
-  /^[\s\S]*?^### 概要\s*\n(?<description>[\s\S]*?)\n### 公開日\s*\n(?<pubDate>[^\n]+)\n### URL スラッグ\s*\n(?<slug>[^\n]+)\n### カテゴリ\s*\n(?<category>[^\n]+)\n### 本文\s*\n(?<body>[\s\S]*)$/m;
+  /^[\s\S]*?^### 概要\s*\n(?<description>[\s\S]*?)\n\s*### 公開日\s*\n(?<pubDate>[^\n]+)\n\s*### URL スラッグ\s*\n(?<slug>[^\n]+)\n\s*### カテゴリ\s*\n(?<category>[^\n]+)\n\s*### 本文\s*\n(?<body>[\s\S]*)$/m;
 
 // Value parsing
 const parseDate = (date: string, number: number) => {

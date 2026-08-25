@@ -26,14 +26,23 @@ const createArticleBody = (overrides: Partial<ArticleBodySections> = {}) => {
   return `投稿フォームの案内です。
 
 ### 概要
+
 ${sections.description}
+
 ### 公開日
+
 ${sections.pubDate}
+
 ### URL スラッグ
+
 ${sections.slug}
+
 ### カテゴリ
+
 ${sections.category}
+
 ### 本文
+
 ${sections.body}`;
 };
 
@@ -49,7 +58,7 @@ const createSource = (
 });
 
 describe("createDiscussionArticle", () => {
-  it("Articles テンプレートの Discussion を記事データに変換する", () => {
+  it("Discussion Form の空行を含む Articles 本文を記事データに変換する", () => {
     expect(createDiscussionArticle(createSource())).toEqual({
       id: "github-pages-specs-and-limits",
       discussionNumber: 100,
