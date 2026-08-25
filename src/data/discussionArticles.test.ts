@@ -75,6 +75,20 @@ afterEach(() => {
 });
 
 describe("getDiscussionArticles", () => {
+  it("GITHUB_TOKEN がない場合は記事を取得せず失敗させる", async () => {
+    const fetchMock = vi.fn();
+
+    vi.stubEnv("GITHUB_TOKEN", "");
+    vi.stubGlobal("fetch", fetchMock);
+
+    const articles = await import("./discussionArticles");
+
+    await expect(articles.getDiscussionArticles()).rejects.toThrow(
+      "GITHUB_TOKEN を設定してください。Notes の記事を取得するために必要です。",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("Articles カテゴリがない場合は取得を失敗させる", async () => {
     const { articles } = await importArticles([
       response({

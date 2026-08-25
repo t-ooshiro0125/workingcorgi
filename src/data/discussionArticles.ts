@@ -156,6 +156,18 @@ const getDiscussionSources = async (token: string, categoryId: string) => {
 };
 
 // Article loading
+const getGithubToken = () => {
+  const token = import.meta.env.GITHUB_TOKEN;
+
+  if (!token) {
+    throw new Error(
+      "GITHUB_TOKEN を設定してください。Notes の記事を取得するために必要です。",
+    );
+  }
+
+  return token;
+};
+
 const assertUniqueArticleIds = (articles: readonly DiscussionArticle[]) => {
   const articleIds = new Set<string>();
 
@@ -174,12 +186,7 @@ const assertUniqueArticleIds = (articles: readonly DiscussionArticle[]) => {
 };
 
 const loadDiscussionArticles = async () => {
-  const token = import.meta.env.GITHUB_TOKEN;
-
-  if (!token) {
-    return [];
-  }
-
+  const token = getGithubToken();
   const categoryId = await getArticlesCategoryId(token);
 
   const articles = (await getDiscussionSources(token, categoryId))

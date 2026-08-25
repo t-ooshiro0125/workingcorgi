@@ -79,6 +79,13 @@ docker volume rm github-cli-private-state
 - 厳守: 機密情報を誤って公開した場合は、キーなどを失効・再発行したうえで Discussion を削除する。
 - 注意: 第三者による転載やキャッシュは削除できない場合がある。
 
+### ローカル環境
+
+- `npm run build` と開発サーバーの実行には `GITHUB_TOKEN` が必要。
+- `GITHUB_TOKEN` には GitHub Discussions を読み取れるトークンを設定する。
+- `.env.example` を参考に、`GITHUB_TOKEN` を `.env` に設定する。
+- 禁止: `.env` やトークンを Git 管理しない。
+
 ### 自動デプロイ
 
 - 次の場合に自動デプロイされる。
