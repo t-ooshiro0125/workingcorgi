@@ -12,10 +12,6 @@ export const site = {
 export const giscus = {
   repo: "t-ooshiro0125/workingcorgi",
   repoId: "R_kgDOTysT5Q",
-  category: "Comments",
-  categoryId: "DIC_kwDOTysT5c4DD9of",
-  mapping: "pathname",
-  strict: true,
   reactionsEnabled: true,
   inputPosition: "top",
   theme: "noborder_light",

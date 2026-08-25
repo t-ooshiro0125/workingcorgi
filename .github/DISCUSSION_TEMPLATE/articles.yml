@@ -1,0 +1,50 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        公開済みの記事だけを投稿してください。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 概要
+      description: Notes 一覧と検索結果に表示します。
+    validations:
+      required: true
+
+  - type: input
+    id: pubdate
+    attributes:
+      label: 公開日
+      description: YYYY-MM-DD 形式で入力します。
+      placeholder: "2026-08-25"
+    validations:
+      required: true
+
+  - type: input
+    id: slug
+    attributes:
+      label: URL スラッグ
+      description: 英小文字・数字・ハイフンで入力します。公開後は変更しません。
+      placeholder: "github-pages-specs-and-limits"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: カテゴリ
+      options:
+        - tech
+        - note
+        - devlog
+    validations:
+      required: true
+
+  - type: textarea
+    id: body
+    attributes:
+      label: 本文
+      description: Markdown で入力します。
+    validations:
+      required: true

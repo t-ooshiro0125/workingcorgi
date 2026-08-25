@@ -7,10 +7,17 @@ on:
   push:
     branches:
       - main
+  discussion:
+    types:
+      - created
+      - edited
+      - deleted
+      - category_changed
   workflow_dispatch:
 
 permissions:
   contents: read
+  discussions: read
   pages: write
   id-token: write
 
@@ -20,6 +27,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      github.event_name != 'discussion' ||
+      github.event.discussion.category.slug == 'articles' ||
+      (github.event.action == 'category_changed' &&
+      github.event.changes.category.from.slug == 'articles')
     runs-on: ubuntu-latest
 
     steps:
@@ -46,6 +58,7 @@ jobs:
 
       - name: Build site
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
         run: npm run build
 
@@ -60,7 +73,10 @@ jobs:
           path: ./dist
 
   deploy:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: >-
+      needs.build.result == 'success' &&
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
