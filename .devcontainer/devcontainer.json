@@ -1,8 +1,14 @@
 {
   "name": "Node.js & TypeScript",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:5-24-trixie",
-  "mounts": ["source=codex-private-state,target=/home/node/.codex,type=volume"],
-  "postCreateCommand": "npm ci",
+  "mounts": [
+    "source=codex-private-state,target=/home/node/.codex,type=volume",
+    "source=github-cli-private-state,target=/home/node/.config/gh,type=volume"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "postCreateCommand": "sudo chown -R node:node /home/node/.config/gh && npm ci",
   "postStartCommand": "npm run dev -- --background",
   "forwardPorts": [4321],
   "portsAttributes": {
