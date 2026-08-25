@@ -53,7 +53,7 @@ const createSource = (
   title: "Discussion の記事",
   body: createArticleBody(),
   discussionCategory: { id: "articles-category-id", name: "Articles" },
-  updatedAt: "2026-08-25T01:00:00Z",
+  lastEditedAt: "2026-08-25T01:00:00Z",
   ...overrides,
 });
 
@@ -73,6 +73,12 @@ describe("createDiscussionArticle", () => {
       category: "tech",
       body: "## 見出し\n\n本文です。",
     });
+  });
+
+  it("未編集の記事には更新日時を設定しない", () => {
+    expect(
+      createDiscussionArticle(createSource({ lastEditedAt: null })),
+    ).toMatchObject({ updatedDate: undefined });
   });
 
   it.each([
@@ -117,9 +123,9 @@ describe("createDiscussionArticle", () => {
       "Discussion #100 の本文は空にできません。",
     ],
     [
-      "更新日時が不正",
-      { updatedAt: "invalid" },
-      "Discussion #100 の 更新日時 が不正です。",
+      "最終編集日時が不正",
+      { lastEditedAt: "invalid" },
+      "Discussion #100 の 最終編集日時 が不正です。",
     ],
   ])("%s を拒否する", (_label, overrides, message) => {
     expect(() => createDiscussionArticle(createSource(overrides))).toThrow(

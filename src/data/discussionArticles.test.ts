@@ -48,7 +48,7 @@ const createDiscussionSource = (
   number: 1,
   title: "記事",
   body: articleBody,
-  updatedAt: "2026-08-25T00:00:00Z",
+  lastEditedAt: "2026-08-25T00:00:00Z",
   discussionCategory,
   ...overrides,
 });
@@ -119,7 +119,7 @@ describe("getDiscussionArticles", () => {
             number: 2,
             title: "新しい記事",
             body: articleBody.replace("2026-08-25", "2026-08-26"),
-            updatedAt: "2026-08-26T00:00:00Z",
+            lastEditedAt: "2026-08-26T00:00:00Z",
           }),
         ],
         { hasNextPage: false, endCursor: null },
@@ -139,6 +139,7 @@ describe("getDiscussionArticles", () => {
       },
     ]);
     expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock.mock.calls[1][1].body).toContain("lastEditedAt");
     expect(fetchMock.mock.calls[1][1].body).toContain(
       "discussionCategory: category",
     );
@@ -158,7 +159,7 @@ describe("getDiscussionArticles", () => {
           createDiscussionSource({
             number: 2,
             title: "重複した記事",
-            updatedAt: "2026-08-26T00:00:00Z",
+            lastEditedAt: "2026-08-26T00:00:00Z",
           }),
         ],
         { hasNextPage: false, endCursor: null },

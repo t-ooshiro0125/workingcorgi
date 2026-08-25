@@ -67,7 +67,7 @@ const articlesCategoryQuery = `query($owner: String!, $name: String!) {
 const discussionSourcesQuery = `query($owner: String!, $name: String!, $categoryId: ID!, $after: String) {
   repository(owner: $owner, name: $name) {
     discussions(first: 100, after: $after, categoryId: $categoryId, orderBy: { field: UPDATED_AT, direction: DESC }) {
-      nodes { number title body updatedAt discussionCategory: category { id name } }
+      nodes { number title body lastEditedAt discussionCategory: category { id name } }
       pageInfo { hasNextPage endCursor }
     }
   }

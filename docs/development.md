@@ -60,6 +60,7 @@ docker volume rm github-cli-private-state
 - 記事 URL は `notes/<URLスラッグ>/` とする。
 - 原則: URL スラッグは初回公開時にタイトルをもとに決める。
 - 禁止: 公開後に URL スラッグを変更しない。
+- 記事を編集した場合だけ、最終編集日時を更新日として表示する。
 - 記事詳細では、その Discussion のコメント・リアクションを giscus で表示する。
 
 ### 管理方法

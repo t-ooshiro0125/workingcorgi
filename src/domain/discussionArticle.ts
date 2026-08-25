@@ -8,7 +8,7 @@ export interface DiscussionArticleSource {
   readonly number: number;
   readonly title: string;
   readonly body: string;
-  readonly updatedAt: string;
+  readonly lastEditedAt: string | null;
   readonly discussionCategory: {
     readonly id: string;
     readonly name: string;
@@ -22,7 +22,7 @@ export interface DiscussionArticle {
   readonly title: string;
   readonly description: string;
   readonly pubDate: Date;
-  readonly updatedDate: Date;
+  readonly updatedDate?: Date;
   readonly category: NoteCategory;
   readonly body: string;
 }
@@ -144,7 +144,7 @@ export const createDiscussionArticle = ({
   discussionCategory,
   title,
   body: sourceBody,
-  updatedAt,
+  lastEditedAt,
 }: DiscussionArticleSource): DiscussionArticle => {
   const sections = parseArticleSections(sourceBody, number);
   const parsedTitle = parseTitle(title, number);
@@ -153,7 +153,9 @@ export const createDiscussionArticle = ({
   const category = parseCategory(sections.category, number);
   const body = parseBody(sections.body, number);
   const pubDate = parseDate(sections.pubDate, number);
-  const updatedDate = parseDateTime(updatedAt, "更新日時", number);
+  const updatedDate = lastEditedAt
+    ? parseDateTime(lastEditedAt, "最終編集日時", number)
+    : undefined;
 
   return {
     id: slug,
