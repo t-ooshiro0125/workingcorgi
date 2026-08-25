@@ -53,6 +53,40 @@ gh auth status
 docker volume rm github-cli-private-state
 ```
 
+## Notes
+
+### 仕様
+
+- 記事 URL は `notes/<URLスラッグ>/` とする。
+- 原則: URL スラッグは初回公開時にタイトルをもとに決める。
+- 禁止: 公開後に URL スラッグを変更しない。
+- 記事詳細では、その Discussion のコメント・リアクションを giscus で表示する。
+
+### 管理方法
+
+- 原則: 公開済みの記事は GitHub Discussions の `Articles` カテゴリで管理する。
+- 禁止: 下書きを GitHub Discussions に保存しない。
+
+#### 作成・編集
+
+- 厳守: 記事の作成・編集は `Articles` カテゴリの Discussion で行い、投稿フォームの項目をすべて入力する。
+
+#### 公開の取り消し
+
+- `Articles` から別カテゴリへ移動すると、次回のデプロイ後にサイトから非公開になる。
+- Discussion を削除すると、次回のデプロイ後にサイトから非公開になる。
+- 注意: 別カテゴリへ移動した Discussion は、GitHub Discussions では引き続き公開される。
+- 厳守: 機密情報を誤って公開した場合は、キーなどを失効・再発行したうえで Discussion を削除する。
+- 注意: 第三者による転載やキャッシュは削除できない場合がある。
+
+### 自動デプロイ
+
+- 次の場合に自動デプロイされる。
+  - `Articles` カテゴリで Discussion を作成・編集・削除する。
+  - Discussion を `Articles` カテゴリに移動する。
+  - Discussion を `Articles` カテゴリから別のカテゴリへ移動する。
+- `Articles` に関係しない Discussion や、コメント・リアクションでは自動デプロイされない。
+
 ## 実装と確認
 
 - 実装前に `docs/product.md` と `docs/conventions.md` を確認する。

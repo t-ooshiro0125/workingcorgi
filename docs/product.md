@@ -61,10 +61,15 @@
 
 ## コンテンツの方針
 
-- Notes は Markdown と Astro Content Collections で管理できる構成にする。
-- Notes は `tech`、`note`、`devlog` のカテゴリで区別する。
-- Notes には、GitHub Discussions を保存先とする giscus のコメント欄を設ける。
-- 公開日時、更新日時、タイトル、概要、カテゴリを用意し、一覧で探しやすくする。
+### Notes
+
+- GitHub Discussions の `Articles` カテゴリで管理する。
+- `tech`、`note`、`devlog` のカテゴリで分類する。
+- giscus を利用し、GitHub Discussions を保存先とするコメント欄を設ける。
+- 公開日時、更新日時、タイトル、概要、カテゴリを表示し、記事を探しやすくする。
+
+### 言語
+
 - 日本語を基本とし、多言語化は必要になった時点で設計する。
 
 ## 今回は作らないこと

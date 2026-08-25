@@ -1,18 +1,17 @@
 ---
-import { getCollection, render, type CollectionEntry } from "astro:content";
-
 import { noteCategoryOgps } from "../../config/noteCategoryOgps";
 import { site } from "../../config/site";
 import GiscusComments from "../../components/GiscusComments.astro";
 import NoteMeta from "../../components/NoteMeta.astro";
+import {
+  getDiscussionArticles,
+  renderDiscussionArticleBody,
+} from "../../data/discussionArticles";
+import type { DiscussionArticle } from "../../domain/discussionArticle";
 import Layout from "../../layouts/Layout.astro";
 
-interface Props {
-  note: CollectionEntry<"notes">;
-}
-
 export async function getStaticPaths() {
-  const notes = await getCollection("notes", ({ data }) => !data.draft);
+  const notes = await getDiscussionArticles();
 
   return notes.map((note) => ({
     params: { slug: note.id },
@@ -20,17 +19,16 @@ export async function getStaticPaths() {
   }));
 }
 
-const { note } = Astro.props as Props;
-const { Content } = await render(note);
-
-const categoryOgp = noteCategoryOgps[note.data.category];
-const ogImage = note.data.ogImage ?? categoryOgp?.image;
-const ogImageAlt = note.data.ogImageAlt ?? categoryOgp?.imageAlt;
+const { note } = Astro.props as { readonly note: DiscussionArticle };
+const discussionArticleHtml = await renderDiscussionArticleBody(note);
+const categoryOgp = noteCategoryOgps[note.category];
+const ogImage = categoryOgp?.image;
+const ogImageAlt = categoryOgp?.imageAlt;
 ---
 
 <Layout
-  title={`${note.data.title} | ${site.name}`}
-  description={note.data.description}
+  title={note.title + " | " + site.name}
+  description={note.description}
   ogImage={ogImage}
   ogImageAlt={ogImageAlt}
 >
@@ -41,21 +39,24 @@ const ogImageAlt = note.data.ogImageAlt ?? categoryOgp?.imageAlt;
 
     <header class="note__header">
       <NoteMeta
-        category={note.data.category}
-        pubDate={note.data.pubDate}
-        updatedDate={note.data.updatedDate}
+        category={note.category}
+        pubDate={note.pubDate}
+        updatedDate={note.updatedDate}
         showDateLabel
         showUpdatedDate
       />
-      <h1 class="note__title">{note.data.title}</h1>
-      <p class="note__description">{note.data.description}</p>
+      <h1 class="note__title">{note.title}</h1>
+      <p class="note__description">{note.description}</p>
     </header>
 
-    <div class="note__content">
-      <Content />
-    </div>
+    <div class="note__content" set:html={discussionArticleHtml} />
 
-    <GiscusComments />
+    <GiscusComments
+      discussion={{
+        number: note.discussionNumber,
+        category: note.discussionCategory,
+      }}
+    />
 
     <footer class="note__footer">
       <a class="note__back-link" href={`${import.meta.env.BASE_URL}notes/`}>
