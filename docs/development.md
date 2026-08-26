@@ -93,7 +93,13 @@ docker volume rm github-cli-private-state
 ### ローカル環境
 
 - 原則: `.env` の `PUBLIC_GA_MEASUREMENT_ID` をコメントアウトし、GA4 を読み込まない。
-- 例外: 動作確認などで必要な場合のみ、`PUBLIC_GA_MEASUREMENT_ID` のコメントアウトを外す。
+- 例外: 必要な場合のみ、`.env` の `PUBLIC_GA_MEASUREMENT_ID` のコメントアウトを外す。
+- 厳守: `PUBLIC_GA_MEASUREMENT_ID` を変更した後は、開発サーバーを再起動する。
+
+  ```sh
+  astro dev stop
+  astro dev --background
+  ```
 
 ### 同意管理
 
