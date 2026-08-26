@@ -12,7 +12,10 @@ import {
   noteCategoryValues,
   type NoteCategory,
 } from "../config/noteCategories";
-import type { DiscussionArticle } from "../domain/discussionArticle";
+import {
+  parseDiscussionArticleTitle,
+  type DiscussionArticle,
+} from "../domain/discussionArticle";
 
 const defaultCacheDirectory = resolve(".cache/notes");
 const indexFileName = "index.json";
@@ -20,7 +23,7 @@ const articleIdPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 type CachedDiscussionArticle = Omit<
   DiscussionArticle,
-  "pubDate" | "updatedDate"
+  "plainTitle" | "titleParts" | "pubDate" | "updatedDate"
 > & {
   readonly pubDate: string;
   readonly updatedDate?: string;
@@ -119,7 +122,10 @@ const parseArticle = (value: unknown, id: string): DiscussionArticle => {
     id,
     discussionNumber: article.discussionNumber,
     discussionCategory: parseDiscussionCategory(article.discussionCategory),
-    title: parseNonEmptyString(article.title),
+    ...parseDiscussionArticleTitle(
+      parseNonEmptyString(article.title),
+      article.discussionNumber,
+    ),
     description: parseNonEmptyString(article.description),
     pubDate: parseDate(article.pubDate),
     updatedDate:
@@ -166,8 +172,27 @@ export const getCachedDiscussionArticles = async (
 ) => readArticles(directory, await readArticleIds(directory));
 
 // Cache writing
+const createCachedArticle = (
+  article: DiscussionArticle,
+): CachedDiscussionArticle => ({
+  id: article.id,
+  discussionNumber: article.discussionNumber,
+  discussionCategory: article.discussionCategory,
+  title: article.title,
+  description: article.description,
+  pubDate: article.pubDate.toISOString(),
+  ...(article.updatedDate
+    ? { updatedDate: article.updatedDate.toISOString() }
+    : {}),
+  category: article.category,
+  body: article.body,
+});
+
 const writeArticle = (directory: string, article: DiscussionArticle) =>
-  writeJson(join(directory, article.id + ".json"), article);
+  writeJson(
+    join(directory, article.id + ".json"),
+    createCachedArticle(article),
+  );
 
 // index 更新後にだけ実行する。
 const removeStaleArticles = async (

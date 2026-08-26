@@ -1,0 +1,21 @@
+---
+import type { DiscussionArticleTitlePart } from "../domain/discussionArticle";
+
+interface Props {
+  readonly parts: readonly DiscussionArticleTitlePart[];
+}
+
+const { parts } = Astro.props;
+---
+
+{
+  parts.map((part) =>
+    part.type === "code" ? <code>{part.value}</code> : part.value,
+  )
+}
+
+<style lang="scss">
+  code {
+    color: var(--color-accent-strong);
+  }
+</style>

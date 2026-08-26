@@ -1,6 +1,7 @@
 ---
 import { noteCategoryOgps } from "../../config/noteCategoryOgps";
 import { site } from "../../config/site";
+import DiscussionArticleTitle from "../../components/DiscussionArticleTitle.astro";
 import GiscusComments from "../../components/GiscusComments.astro";
 import NoteMeta from "../../components/NoteMeta.astro";
 import {
@@ -27,7 +28,7 @@ const ogImageAlt = categoryOgp?.imageAlt;
 ---
 
 <Layout
-  title={note.title + " | " + site.name}
+  title={note.plainTitle + " | " + site.name}
   description={note.description}
   ogImage={ogImage}
   ogImageAlt={ogImageAlt}
@@ -45,7 +46,9 @@ const ogImageAlt = categoryOgp?.imageAlt;
         showDateLabel
         showUpdatedDate
       />
-      <h1 class="note__title">{note.title}</h1>
+      <h1 class="note__title">
+        <DiscussionArticleTitle parts={note.titleParts} />
+      </h1>
       <p class="note__description">{note.description}</p>
     </header>
 

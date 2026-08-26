@@ -20,11 +20,24 @@ export interface DiscussionArticle {
   readonly discussionNumber: number;
   readonly discussionCategory: DiscussionArticleSource["discussionCategory"];
   readonly title: string;
+  readonly plainTitle: string;
+  readonly titleParts: readonly DiscussionArticleTitlePart[];
   readonly description: string;
   readonly pubDate: Date;
   readonly updatedDate?: Date;
   readonly category: NoteCategory;
   readonly body: string;
+}
+
+export interface DiscussionArticleTitlePart {
+  readonly type: "text" | "code";
+  readonly value: string;
+}
+
+export interface ParsedDiscussionArticleTitle {
+  readonly title: string;
+  readonly plainTitle: string;
+  readonly titleParts: readonly DiscussionArticleTitlePart[];
 }
 
 interface ArticleSections {
@@ -92,14 +105,42 @@ const parseArticleSections = (
   };
 };
 
-const parseTitle = (title: string, number: number) => {
+/** Notes タイトルのインラインコードだけを解析し、表示・SEO 用の値を生成する。 */
+export const parseDiscussionArticleTitle = (
+  title: string,
+  number: number,
+): ParsedDiscussionArticleTitle => {
   const parsedTitle = title.trim();
 
   if (!parsedTitle) {
     throw new Error(`Discussion #${number} のタイトルは空にできません。`);
   }
 
-  return parsedTitle;
+  const values = parsedTitle.split("`");
+
+  if (values.length % 2 === 0) {
+    throw new Error(
+      `Discussion #${number} のタイトルのインラインコードを閉じてください。`,
+    );
+  }
+
+  const titleParts = values.flatMap((value, index) => {
+    const type = index % 2 === 0 ? "text" : "code";
+
+    if (!value && type === "code") {
+      throw new Error(
+        `Discussion #${number} のタイトルのインラインコードは空にできません。`,
+      );
+    }
+
+    return value ? [{ type, value }] : [];
+  });
+
+  return {
+    title: parsedTitle,
+    plainTitle: titleParts.map((part) => part.value).join(""),
+    titleParts,
+  };
 };
 
 const parseDescription = (description: string, number: number) => {
@@ -147,7 +188,7 @@ export const createDiscussionArticle = ({
   lastEditedAt,
 }: DiscussionArticleSource): DiscussionArticle => {
   const sections = parseArticleSections(sourceBody, number);
-  const parsedTitle = parseTitle(title, number);
+  const parsedTitle = parseDiscussionArticleTitle(title, number);
   const description = parseDescription(sections.description, number);
   const slug = parseSlug(sections.slug, number);
   const category = parseCategory(sections.category, number);
@@ -161,7 +202,7 @@ export const createDiscussionArticle = ({
     id: slug,
     discussionNumber: number,
     discussionCategory,
-    title: parsedTitle,
+    ...parsedTitle,
     description,
     pubDate,
     updatedDate,
