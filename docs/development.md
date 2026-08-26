@@ -90,6 +90,11 @@ docker volume rm github-cli-private-state
 - 測定 ID が未設定の場合、Google タグと同意バナーを出力しない。
 - 測定 ID は公開情報。認証情報は Git 管理しない。
 
+### ローカル環境
+
+- 原則: `.env` の `PUBLIC_GA_MEASUREMENT_ID` をコメントアウトし、GA4 を読み込まない。
+- 例外: 動作確認などで必要な場合のみ、`PUBLIC_GA_MEASUREMENT_ID` のコメントアウトを外す。
+
 ### 同意管理
 
 - 厳守: 利用者が許可するまで計測しない。
