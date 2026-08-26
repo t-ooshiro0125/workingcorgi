@@ -49,7 +49,106 @@ const ogImageAlt = categoryOgp?.imageAlt;
       <p class="note__description">{note.description}</p>
     </header>
 
-    <div class="note__content" set:html={discussionArticleHtml} />
+    <div
+      class="note__content"
+      data-note-code-blocks
+      set:html={discussionArticleHtml}
+    />
+
+    <script>
+      // Code block enhancements
+      const copyLabel = "Copy";
+      const copiedLabel = "Copied!";
+      const copyErrorLabel = "Try again";
+      const copySuccessAnnouncement = "コードをコピーしました。";
+      const copyErrorAnnouncement = "コードをコピーできませんでした。";
+      const codeBlocks = document.querySelector<HTMLElement>(
+        "[data-note-code-blocks]",
+      );
+      const languageLabels: Record<string, string> = {
+        text: "Plain text",
+        plaintext: "Plain text",
+        md: "Markdown",
+        markdown: "Markdown",
+        ts: "TypeScript",
+        typescript: "TypeScript",
+        js: "JavaScript",
+        javascript: "JavaScript",
+        css: "CSS",
+        html: "HTML",
+        json: "JSON",
+        sh: "Shell",
+        bash: "Shell",
+        yml: "YAML",
+        yaml: "YAML",
+      };
+
+      const getLanguageLabel = (language: string) =>
+        languageLabels[language.toLowerCase()] ?? language;
+
+      const copyCode = async (code: Element) => {
+        if (!navigator.clipboard) {
+          return false;
+        }
+
+        try {
+          await navigator.clipboard.writeText(code.textContent ?? "");
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      const createCopyStatus = () => {
+        const status = document.createElement("span");
+
+        status.className = "visually-hidden";
+        status.setAttribute("aria-live", "polite");
+        status.setAttribute("aria-atomic", "true");
+
+        return status;
+      };
+
+      const createCopyButton = (code: Element, status: HTMLSpanElement) => {
+        const button = document.createElement("button");
+
+        button.className = "note__code-copy";
+        button.type = "button";
+        button.textContent = copyLabel;
+        button.setAttribute("aria-label", "コードをコピー");
+        button.addEventListener("click", async () => {
+          const copied = await copyCode(code);
+
+          button.textContent = copied ? copiedLabel : copyErrorLabel;
+          status.textContent = copied
+            ? copySuccessAnnouncement
+            : copyErrorAnnouncement;
+
+          window.setTimeout(() => {
+            button.textContent = copyLabel;
+          }, 2000);
+        });
+
+        return button;
+      };
+
+      const enhanceCodeBlock = (code: Element) => {
+        const pre = code.parentElement;
+
+        if (!pre) {
+          return;
+        }
+
+        const status = createCopyStatus();
+
+        pre.dataset.languageLabel = getLanguageLabel(
+          pre.dataset.language ?? "text",
+        );
+        pre.append(createCopyButton(code, status), status);
+      };
+
+      codeBlocks?.querySelectorAll("pre > code").forEach(enhanceCodeBlock);
+    </script>
 
     <GiscusComments
       discussion={{
@@ -209,13 +308,92 @@ const ogImageAlt = categoryOgp?.imageAlt;
     color: var(--color-accent-strong);
   }
 
-  .note__content :global(code) {
+  .note__content :global(:not(pre) > code) {
     padding: 0.1em 0.35em;
     font-size: 0.875em;
     color: var(--color-accent-strong);
     background: var(--color-accent-soft);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
+  }
+
+  .note__content :global(pre) {
+    --note-code-overlay: rgb(248 244 236 / 15%);
+
+    position: relative;
+    max-width: 100%;
+    padding: var(--space-md);
+    margin-block: var(--space-xl);
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .note__content :global(pre > code) {
+    display: block;
+    min-width: max-content;
+    padding-top: var(--space-sm);
+    white-space: normal;
+    counter-reset: code-line;
+    border-top: 1px solid var(--note-code-overlay);
+  }
+
+  .note__content :global(pre > code > .line) {
+    display: block;
+    white-space: pre;
+    counter-increment: code-line;
+  }
+
+  .note__content :global(pre > code > .line::before) {
+    display: inline-block;
+    min-width: 3ch;
+    margin-right: var(--space-md);
+    font-variant-numeric: tabular-nums;
+    color: rgb(248 244 236 / 45%);
+    text-align: right;
+    user-select: none;
+    content: counter(code-line);
+  }
+
+  .note__content :global(pre[data-language-label]::before) {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-accent-soft);
+    letter-spacing: 0.03em;
+    content: attr(data-language-label);
+  }
+
+  .note__content :global(.note__code-copy) {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    min-width: 24px;
+    min-height: 24px;
+    padding-block: 1px;
+    padding-inline: 6px;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-accent-soft);
+    cursor: pointer;
+    background: var(--note-code-overlay);
+    border: 1px solid rgb(248 244 236 / 25%);
+    border-radius: var(--radius-sm);
+
+    &:hover {
+      background: rgb(248 244 236 / 25%);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent-soft);
+      outline-offset: 2px;
+    }
   }
 
   .note__footer {
