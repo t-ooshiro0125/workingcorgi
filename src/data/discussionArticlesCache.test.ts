@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import type { DiscussionArticle } from "../domain/discussionArticle";
+
 import {
   getCachedDiscussionArticles,
   writeDiscussionArticlesCache,
@@ -21,6 +23,16 @@ const cachedArticle = {
   category: "tech" as const,
   body: "本文",
 };
+
+const createArticle = (
+  overrides: Partial<DiscussionArticle> = {},
+): DiscussionArticle => ({
+  ...cachedArticle,
+  plainTitle: cachedArticle.title,
+  titleParts: [{ type: "text", value: cachedArticle.title }],
+  pubDate: new Date(cachedArticle.pubDate),
+  ...overrides,
+});
 
 const createCacheDirectory = async () => {
   const directory = await mkdtemp(join(tmpdir(), "workingcorgi-notes-"));
@@ -88,12 +100,27 @@ describe("getCachedDiscussionArticles", () => {
 });
 
 describe("writeDiscussionArticlesCache", () => {
+  it("インラインコードを含むタイトルを往復しても表示用の部分を維持する", async () => {
+    const directory = await createCacheDirectory();
+    const article = createArticle({
+      title: "Astro の `getStaticPaths`",
+      plainTitle: "Astro の getStaticPaths",
+      titleParts: [
+        { type: "text" as const, value: "Astro の " },
+        { type: "code" as const, value: "getStaticPaths" },
+      ],
+    });
+
+    await writeDiscussionArticlesCache([article], directory);
+
+    await expect(getCachedDiscussionArticles(directory)).resolves.toMatchObject(
+      [article],
+    );
+  });
+
   it("記事データと index を保存する", async () => {
     const directory = await createCacheDirectory();
-    await writeDiscussionArticlesCache(
-      [{ ...cachedArticle, pubDate: new Date(cachedArticle.pubDate) }],
-      directory,
-    );
+    await writeDiscussionArticlesCache([createArticle()], directory);
 
     await expect(
       readFile(join(directory, "index.json"), "utf8").then(JSON.parse),
@@ -102,17 +129,14 @@ describe("writeDiscussionArticlesCache", () => {
       readFile(join(directory, cachedArticle.id + ".json"), "utf8").then(
         JSON.parse,
       ),
-    ).resolves.toMatchObject({ id: cachedArticle.id });
+    ).resolves.toEqual(cachedArticle);
   });
 
   it("同期対象から外れた記事データを削除する", async () => {
     const directory = await createCacheDirectory();
     await writeFile(join(directory, "old-article.json"), "{}");
 
-    await writeDiscussionArticlesCache(
-      [{ ...cachedArticle, pubDate: new Date(cachedArticle.pubDate) }],
-      directory,
-    );
+    await writeDiscussionArticlesCache([createArticle()], directory);
 
     await expect(
       readFile(join(directory, "old-article.json"), "utf8"),

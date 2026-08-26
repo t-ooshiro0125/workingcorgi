@@ -67,6 +67,8 @@ describe("createDiscussionArticle", () => {
         name: "Articles",
       },
       title: "Discussion の記事",
+      plainTitle: "Discussion の記事",
+      titleParts: [{ type: "text", value: "Discussion の記事" }],
       description: "記事の概要です。",
       pubDate: new Date("2026-08-25T00:00:00Z"),
       updatedDate: new Date("2026-08-25T01:00:00Z"),
@@ -81,6 +83,22 @@ describe("createDiscussionArticle", () => {
     ).toMatchObject({ updatedDate: undefined });
   });
 
+  it("タイトルのインラインコードを表示用の部分とプレーンテキストへ分ける", () => {
+    expect(
+      createDiscussionArticle(
+        createSource({ title: "Astro の `getStaticPaths` を使う" }),
+      ),
+    ).toMatchObject({
+      title: "Astro の `getStaticPaths` を使う",
+      plainTitle: "Astro の getStaticPaths を使う",
+      titleParts: [
+        { type: "text", value: "Astro の " },
+        { type: "code", value: "getStaticPaths" },
+        { type: "text", value: " を使う" },
+      ],
+    });
+  });
+
   it.each([
     [
       "テンプレートの見出しが不足している",
@@ -91,6 +109,16 @@ describe("createDiscussionArticle", () => {
       "タイトルが空",
       { title: " " },
       "Discussion #100 のタイトルは空にできません。",
+    ],
+    [
+      "タイトルのインラインコードが閉じられていない",
+      { title: "`getStaticPaths を使う" },
+      "Discussion #100 のタイトルのインラインコードを閉じてください。",
+    ],
+    [
+      "タイトルのインラインコードが空",
+      { title: "`` を使う" },
+      "Discussion #100 のタイトルのインラインコードは空にできません。",
     ],
     [
       "概要が空",

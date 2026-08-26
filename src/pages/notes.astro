@@ -1,5 +1,6 @@
 ---
 import NoteMeta from "../components/NoteMeta.astro";
+import DiscussionArticleTitle from "../components/DiscussionArticleTitle.astro";
 import { getDiscussionArticles } from "../data/discussionArticles";
 import { site } from "../config/site";
 import Layout from "../layouts/Layout.astro";
@@ -32,7 +33,7 @@ const publishedNotes = await getDiscussionArticles();
                   class="notes__link"
                   href={`${import.meta.env.BASE_URL}notes/${note.id}/`}
                 >
-                  {note.title}
+                  <DiscussionArticleTitle parts={note.titleParts} />
                 </a>
               </h2>
 
