@@ -239,4 +239,14 @@ describe("renderDiscussionArticleBody", () => {
       'aria-label="\u8868\u3092\u6a2a\u306b\u30b9\u30af\u30ed\u30fc\u30eb"',
     );
   });
+
+  it("makes the code block scroll region keyboard focusable", async () => {
+    const { renderDiscussionArticleBody } =
+      await import("./discussionArticles");
+    const html = await renderDiscussionArticleBody({
+      body: "```ts\nconst longLine = 'Content';\n```",
+    });
+
+    expect(html).toMatch(/<pre(?![^>]*tabindex)[^>]*>\s*<code tabindex="0">/);
+  });
 });

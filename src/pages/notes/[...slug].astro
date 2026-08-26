@@ -142,8 +142,6 @@ const ogImageAlt = categoryOgp?.imageAlt;
         const status = createCopyStatus();
 
         pre.style.overflowX = "hidden";
-        pre.removeAttribute("tabindex");
-        code.setAttribute("tabindex", "0");
         pre.dataset.languageLabel = getLanguageLabel(
           pre.dataset.language ?? "text",
         );

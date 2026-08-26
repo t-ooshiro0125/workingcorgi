@@ -53,25 +53,64 @@ const tableScrollProperties = {
   ariaLabel: "\u8868\u3092\u6a2a\u306b\u30b9\u30af\u30ed\u30fc\u30eb",
 };
 
-const createScrollableTable = (table: HtmlNode): HtmlNode => ({
-  type: "element",
-  tagName: "div",
-  properties: tableScrollProperties,
-  children: [table],
-});
+const isElement = (node: HtmlNode, tagName: string) =>
+  node.type === "element" && node.tagName === tagName;
 
-const wrapTables = (children: HtmlNode[]) => {
+const wrapTable = (node: HtmlNode): HtmlNode => {
+  if (!isElement(node, "table")) {
+    return node;
+  }
+
+  return {
+    type: "element",
+    tagName: "div",
+    properties: tableScrollProperties,
+    children: [node],
+  };
+};
+
+const makeCodeBlockKeyboardScrollable = (node: HtmlNode): HtmlNode => {
+  if (!isElement(node, "pre")) {
+    return node;
+  }
+
+  const properties = { ...node.properties };
+
+  delete properties.tabIndex;
+  delete properties.tabindex;
+
+  return {
+    ...node,
+    properties,
+    children: node.children?.map((code) =>
+      isElement(code, "code")
+        ? {
+            ...code,
+            properties: { ...code.properties, tabIndex: 0 },
+          }
+        : code,
+    ),
+  };
+};
+
+const enhanceNoteHtmlNode = (node: HtmlNode) =>
+  makeCodeBlockKeyboardScrollable(wrapTable(node));
+
+const transformHtmlNodes = (
+  children: HtmlNode[],
+  transform: (node: HtmlNode) => HtmlNode,
+) => {
   for (const [index, child] of children.entries()) {
-    if (child.type === "element" && child.tagName === "table") {
-      children[index] = createScrollableTable(child);
-    } else if (child.children) {
-      wrapTables(child.children);
+    if (child.children) {
+      transformHtmlNodes(child.children, transform);
     }
+
+    children[index] = transform(child);
   }
 };
 
-const rehypeWrapTables = () => (tree: HtmlNode) => {
-  wrapTables(tree.children ?? []);
+const rehypeEnhanceNotesContent = () => (tree: HtmlNode) => {
+  transformHtmlNodes(tree.children ?? [], enhanceNoteHtmlNode);
 };
 
 const headingAnchorOptions = {
@@ -124,7 +163,7 @@ const markdownProcessor = createMarkdownProcessor({
   rehypePlugins: [
     rehypeHeadingIds,
     [rehypeAutolinkHeadings, headingAnchorOptions],
-    rehypeWrapTables,
+    rehypeEnhanceNotesContent,
   ],
 });
 
