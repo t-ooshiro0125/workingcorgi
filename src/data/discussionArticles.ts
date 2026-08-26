@@ -48,8 +48,44 @@ const headingAnchorOptions = {
   },
 };
 
+const codeHighlightTheme = {
+  name: "working-corgi-dark",
+  type: "dark",
+  colors: {
+    "editor.background": "#312d29",
+    "editor.foreground": "#f8f4ec",
+  },
+  tokenColors: [
+    {
+      scope: ["comment", "punctuation.definition.comment", "string.comment"],
+      settings: { foreground: "#b8afa6" },
+    },
+    {
+      scope: ["constant", "support", "meta.property-name"],
+      settings: { foreground: "#dce8de" },
+    },
+    {
+      scope: ["entity", "entity.name"],
+      settings: { foreground: "#c69a4a" },
+    },
+    {
+      scope: ["keyword", "storage", "storage.type"],
+      settings: { foreground: "#ebd0c4" },
+    },
+    {
+      scope: ["string", "punctuation.definition.string"],
+      settings: { foreground: "#dce8de" },
+    },
+    {
+      scope: "variable",
+      settings: { foreground: "#f8f4ec" },
+    },
+  ],
+};
+
 const markdownProcessor = createMarkdownProcessor({
   remarkRehype: { allowDangerousHtml: false },
+  shikiConfig: { theme: codeHighlightTheme },
   rehypePlugins: [
     rehypeHeadingIds,
     [rehypeAutolinkHeadings, headingAnchorOptions],
