@@ -141,6 +141,9 @@ const ogImageAlt = categoryOgp?.imageAlt;
 
         const status = createCopyStatus();
 
+        pre.style.overflowX = "hidden";
+        pre.removeAttribute("tabindex");
+        code.setAttribute("tabindex", "0");
         pre.dataset.languageLabel = getLanguageLabel(
           pre.dataset.language ?? "text",
         );
@@ -200,6 +203,7 @@ const ogImageAlt = categoryOgp?.imageAlt;
 
   .note__content {
     padding: var(--space-xl);
+    container-type: inline-size;
     line-height: 1.9;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -278,13 +282,36 @@ const ogImageAlt = categoryOgp?.imageAlt;
 
   .note__content :global(table) {
     width: 100%;
-    margin-block: var(--space-xl);
+    min-width: 0;
     overflow: hidden;
     font-size: 0.9375rem;
     border-spacing: 0;
     border-collapse: separate;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
+  }
+
+  .note__content :global(.note__table-scroll) {
+    max-width: 100%;
+    margin-block: var(--space-xl);
+    overflow-x: auto;
+  }
+
+  @container (max-width: 36rem) {
+    .note__content :global(.note__table-scroll)::before {
+      display: block;
+      width: max-content;
+      margin-bottom: var(--space-xs);
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--color-text-muted);
+      content: "横にスクロールできます →";
+    }
+
+    .note__content :global(table) {
+      width: max-content;
+      min-width: 36rem;
+    }
   }
 
   .note__content :global(th),
@@ -324,7 +351,7 @@ const ogImageAlt = categoryOgp?.imageAlt;
     max-width: 100%;
     padding: var(--space-md);
     margin-block: var(--space-xl);
-    overflow-x: auto;
+    overflow: hidden;
     font-size: 0.875rem;
     line-height: 1.55;
     border: 1px solid var(--color-border);
@@ -333,8 +360,9 @@ const ogImageAlt = categoryOgp?.imageAlt;
 
   .note__content :global(pre > code) {
     display: block;
-    min-width: max-content;
+    max-width: 100%;
     padding-top: var(--space-sm);
+    overflow-x: auto;
     white-space: normal;
     counter-reset: code-line;
     border-top: 1px solid var(--note-code-overlay);

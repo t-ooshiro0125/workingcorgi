@@ -35,10 +35,45 @@ interface DiscussionArticlesGraphqlData {
   };
 }
 
+interface HtmlNode {
+  readonly type: string;
+  readonly tagName?: string;
+  readonly properties?: Record<string, unknown>;
+  readonly children?: HtmlNode[];
+}
+
 const repository = { owner: "t-ooshiro0125", name: "workingcorgi" };
 const articlesCategorySlug = "articles";
 
 // Markdown rendering
+const tableScrollProperties = {
+  className: ["note__table-scroll"],
+  tabIndex: 0,
+  role: "region",
+  ariaLabel: "\u8868\u3092\u6a2a\u306b\u30b9\u30af\u30ed\u30fc\u30eb",
+};
+
+const createScrollableTable = (table: HtmlNode): HtmlNode => ({
+  type: "element",
+  tagName: "div",
+  properties: tableScrollProperties,
+  children: [table],
+});
+
+const wrapTables = (children: HtmlNode[]) => {
+  for (const [index, child] of children.entries()) {
+    if (child.type === "element" && child.tagName === "table") {
+      children[index] = createScrollableTable(child);
+    } else if (child.children) {
+      wrapTables(child.children);
+    }
+  }
+};
+
+const rehypeWrapTables = () => (tree: HtmlNode) => {
+  wrapTables(tree.children ?? []);
+};
+
 const headingAnchorOptions = {
   behavior: "append",
   content: { type: "text", value: "#" },
@@ -89,6 +124,7 @@ const markdownProcessor = createMarkdownProcessor({
   rehypePlugins: [
     rehypeHeadingIds,
     [rehypeAutolinkHeadings, headingAnchorOptions],
+    rehypeWrapTables,
   ],
 });
 
@@ -251,7 +287,7 @@ export const getDiscussionArticles = () =>
 
 /** Discussion の Markdown 本文を表示用 HTML に変換する。 */
 export const renderDiscussionArticleBody = async (
-  article: DiscussionArticle,
+  article: Pick<DiscussionArticle, "body">,
 ) => {
   const processor = await markdownProcessor;
   const { code } = await processor.render(article.body);
