@@ -35,10 +35,84 @@ interface DiscussionArticlesGraphqlData {
   };
 }
 
+interface HtmlNode {
+  readonly type: string;
+  readonly tagName?: string;
+  readonly properties?: Record<string, unknown>;
+  readonly children?: HtmlNode[];
+}
+
 const repository = { owner: "t-ooshiro0125", name: "workingcorgi" };
 const articlesCategorySlug = "articles";
 
 // Markdown rendering
+const tableScrollProperties = {
+  className: ["note__table-scroll"],
+  tabIndex: 0,
+  role: "region",
+  ariaLabel: "\u8868\u3092\u6a2a\u306b\u30b9\u30af\u30ed\u30fc\u30eb",
+};
+
+const isElement = (node: HtmlNode, tagName: string) =>
+  node.type === "element" && node.tagName === tagName;
+
+const wrapTable = (node: HtmlNode): HtmlNode => {
+  if (!isElement(node, "table")) {
+    return node;
+  }
+
+  return {
+    type: "element",
+    tagName: "div",
+    properties: tableScrollProperties,
+    children: [node],
+  };
+};
+
+const makeCodeBlockKeyboardScrollable = (node: HtmlNode): HtmlNode => {
+  if (!isElement(node, "pre")) {
+    return node;
+  }
+
+  const properties = { ...node.properties };
+
+  delete properties.tabIndex;
+  delete properties.tabindex;
+
+  return {
+    ...node,
+    properties,
+    children: node.children?.map((code) =>
+      isElement(code, "code")
+        ? {
+            ...code,
+            properties: { ...code.properties, tabIndex: 0 },
+          }
+        : code,
+    ),
+  };
+};
+
+const enhanceNoteHtmlNode = (node: HtmlNode) =>
+  makeCodeBlockKeyboardScrollable(wrapTable(node));
+
+const transformHtmlNodes = (
+  children: HtmlNode[],
+  transform: (node: HtmlNode) => HtmlNode,
+) => {
+  for (const [index, child] of children.entries()) {
+    if (child.children) {
+      transformHtmlNodes(child.children, transform);
+    }
+
+    children[index] = transform(child);
+  }
+};
+
+const rehypeEnhanceNotesContent = () => (tree: HtmlNode) => {
+  transformHtmlNodes(tree.children ?? [], enhanceNoteHtmlNode);
+};
+
 const headingAnchorOptions = {
   behavior: "append",
   content: { type: "text", value: "#" },
@@ -89,6 +163,7 @@ const markdownProcessor = createMarkdownProcessor({
   rehypePlugins: [
     rehypeHeadingIds,
     [rehypeAutolinkHeadings, headingAnchorOptions],
+    rehypeEnhanceNotesContent,
   ],
 });
 
@@ -251,7 +326,7 @@ export const getDiscussionArticles = () =>
 
 /** Discussion の Markdown 本文を表示用 HTML に変換する。 */
 export const renderDiscussionArticleBody = async (
-  article: DiscussionArticle,
+  article: Pick<DiscussionArticle, "body">,
 ) => {
   const processor = await markdownProcessor;
   const { code } = await processor.render(article.body);

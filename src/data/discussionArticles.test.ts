@@ -223,3 +223,30 @@ describe("getDiscussionArticles", () => {
     expect(getCachedDiscussionArticles).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("renderDiscussionArticleBody", () => {
+  it("wraps Markdown tables in a scrollable region", async () => {
+    const { renderDiscussionArticleBody } =
+      await import("./discussionArticles");
+    const html = await renderDiscussionArticleBody({
+      body: "| Name | Value |\n| --- | --- |\n| Long name | Content |",
+    });
+
+    expect(html).toMatch(/<div class="note__table-scroll"[^>]*>\s*<table>/);
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('role="region"');
+    expect(html).toContain(
+      'aria-label="\u8868\u3092\u6a2a\u306b\u30b9\u30af\u30ed\u30fc\u30eb"',
+    );
+  });
+
+  it("makes the code block scroll region keyboard focusable", async () => {
+    const { renderDiscussionArticleBody } =
+      await import("./discussionArticles");
+    const html = await renderDiscussionArticleBody({
+      body: "```ts\nconst longLine = 'Content';\n```",
+    });
+
+    expect(html).toMatch(/<pre(?![^>]*tabindex)[^>]*>\s*<code tabindex="0">/);
+  });
+});
