@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
+    "notes:sync": "tsx --env-file-if-exists=.env scripts/sync-notes.ts",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -17,8 +18,8 @@
     "lint": "npm run lint:code && npm run lint:styles",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write .devcontainer .vscode docs src AGENTS.md astro.config.mjs eslint.config.js stylelint.config.mjs package.json .prettierrc.json workingcorgi.code-workspace .github",
-    "format:check": "prettier --check .devcontainer .vscode docs src AGENTS.md astro.config.mjs eslint.config.js stylelint.config.mjs package.json .prettierrc.json workingcorgi.code-workspace .github"
+    "format": "prettier --write .devcontainer .vscode docs scripts src AGENTS.md astro.config.mjs eslint.config.js stylelint.config.mjs package.json .prettierrc.json workingcorgi.code-workspace .github",
+    "format:check": "prettier --check .devcontainer .vscode docs scripts src AGENTS.md astro.config.mjs eslint.config.js stylelint.config.mjs package.json .prettierrc.json workingcorgi.code-workspace .github"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",
@@ -36,6 +37,7 @@
     "stylelint": "^17.14.1",
     "stylelint-config-recess-order": "^7.8.0",
     "stylelint-config-standard-scss": "^17.0.0",
+    "tsx": "^4.23.12",
     "typescript-eslint": "^8.66.0",
     "vitest": "^4.1.11"
   }
