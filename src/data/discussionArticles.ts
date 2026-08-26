@@ -202,13 +202,16 @@ export const fetchDiscussionArticles = async () => {
 let discussionArticlesPromise:
   Promise<readonly DiscussionArticle[]> | undefined;
 
-/** 開発時はローカルキャッシュ、本番ビルド時は GitHub Discussions から Articles を取得する。 */
-export const getDiscussionArticles = () => {
-  discussionArticlesPromise ??= import.meta.env.DEV
-    ? getCachedDiscussionArticles()
-    : fetchDiscussionArticles();
+const getProductionDiscussionArticles = () => {
+  discussionArticlesPromise ??= fetchDiscussionArticles();
   return discussionArticlesPromise;
 };
+
+/** 開発時はローカルキャッシュ、本番ビルド時は GitHub Discussions から Articles を取得する。 */
+export const getDiscussionArticles = () =>
+  import.meta.env.DEV
+    ? getCachedDiscussionArticles()
+    : getProductionDiscussionArticles();
 
 /** Discussion の Markdown 本文を表示用 HTML に変換する。 */
 export const renderDiscussionArticleBody = async (

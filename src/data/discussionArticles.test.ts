@@ -69,6 +69,7 @@ const importArticles = async (responses: readonly Response[]) => {
 };
 
 afterEach(() => {
+  vi.doUnmock("./discussionArticlesCache");
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -203,4 +204,22 @@ describe("fetchDiscussionArticles", () => {
       await expect(articles.fetchDiscussionArticles()).rejects.toThrow(message);
     },
   );
+});
+
+describe("getDiscussionArticles", () => {
+  it("開発時は呼び出すたびにローカルキャッシュを読み込む", async () => {
+    const getCachedDiscussionArticles = vi.fn().mockResolvedValue([]);
+
+    vi.stubEnv("DEV", "true");
+    vi.doMock("./discussionArticlesCache", () => ({
+      getCachedDiscussionArticles,
+    }));
+
+    const { getDiscussionArticles } = await import("./discussionArticles");
+
+    await getDiscussionArticles();
+    await getDiscussionArticles();
+
+    expect(getCachedDiscussionArticles).toHaveBeenCalledTimes(2);
+  });
 });
