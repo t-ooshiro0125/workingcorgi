@@ -69,12 +69,13 @@ const importArticles = async (responses: readonly Response[]) => {
 };
 
 afterEach(() => {
+  vi.doUnmock("./discussionArticlesCache");
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.resetModules();
 });
 
-describe("getDiscussionArticles", () => {
+describe("fetchDiscussionArticles", () => {
   it("GITHUB_TOKEN がない場合は記事を取得せず失敗させる", async () => {
     const fetchMock = vi.fn();
 
@@ -83,7 +84,7 @@ describe("getDiscussionArticles", () => {
 
     const articles = await import("./discussionArticles");
 
-    await expect(articles.getDiscussionArticles()).rejects.toThrow(
+    await expect(articles.fetchDiscussionArticles()).rejects.toThrow(
       "GITHUB_TOKEN を設定してください。Notes の記事を取得するために必要です。",
     );
     expect(fetchMock).not.toHaveBeenCalled();
@@ -96,7 +97,7 @@ describe("getDiscussionArticles", () => {
       }),
     ]);
 
-    await expect(articles.getDiscussionArticles()).rejects.toThrow(
+    await expect(articles.fetchDiscussionArticles()).rejects.toThrow(
       "GitHub Discussions に Articles カテゴリがありません。",
     );
   });
@@ -126,7 +127,7 @@ describe("getDiscussionArticles", () => {
       ),
     ]);
 
-    await expect(articles.getDiscussionArticles()).resolves.toMatchObject([
+    await expect(articles.fetchDiscussionArticles()).resolves.toMatchObject([
       {
         id: "article-slug",
         title: "新しい記事",
@@ -166,7 +167,7 @@ describe("getDiscussionArticles", () => {
       ),
     ]);
 
-    await expect(articles.getDiscussionArticles()).rejects.toThrow(
+    await expect(articles.fetchDiscussionArticles()).rejects.toThrow(
       "Discussion #2 の URL スラッグが重複しています: article-slug",
     );
   });
@@ -176,7 +177,7 @@ describe("getDiscussionArticles", () => {
       response({ errors: [{ message: "Bad credentials" }] }),
     ]);
 
-    await expect(articles.getDiscussionArticles()).rejects.toThrow(
+    await expect(articles.fetchDiscussionArticles()).rejects.toThrow(
       "GitHub Discussions の取得に失敗しました: Bad credentials",
     );
   });
@@ -200,7 +201,25 @@ describe("getDiscussionArticles", () => {
         discussionResponse,
       ]);
 
-      await expect(articles.getDiscussionArticles()).rejects.toThrow(message);
+      await expect(articles.fetchDiscussionArticles()).rejects.toThrow(message);
     },
   );
+});
+
+describe("getDiscussionArticles", () => {
+  it("開発時は呼び出すたびにローカルキャッシュを読み込む", async () => {
+    const getCachedDiscussionArticles = vi.fn().mockResolvedValue([]);
+
+    vi.stubEnv("DEV", "true");
+    vi.doMock("./discussionArticlesCache", () => ({
+      getCachedDiscussionArticles,
+    }));
+
+    const { getDiscussionArticles } = await import("./discussionArticles");
+
+    await getDiscussionArticles();
+    await getDiscussionArticles();
+
+    expect(getCachedDiscussionArticles).toHaveBeenCalledTimes(2);
+  });
 });

@@ -4,6 +4,7 @@ import {
 } from "@astrojs/markdown-remark";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
+import { getCachedDiscussionArticles } from "./discussionArticlesCache";
 import { requestGithubGraphql } from "./githubGraphql";
 
 import {
@@ -157,7 +158,7 @@ const getDiscussionSources = async (token: string, categoryId: string) => {
 
 // Article loading
 const getGithubToken = () => {
-  const token = import.meta.env.GITHUB_TOKEN;
+  const token = import.meta.env?.GITHUB_TOKEN ?? process.env.GITHUB_TOKEN;
 
   if (!token) {
     throw new Error(
@@ -185,7 +186,7 @@ const assertUniqueArticleIds = (articles: readonly DiscussionArticle[]) => {
   }
 };
 
-const loadDiscussionArticles = async () => {
+export const fetchDiscussionArticles = async () => {
   const token = getGithubToken();
   const categoryId = await getArticlesCategoryId(token);
 
@@ -201,11 +202,16 @@ const loadDiscussionArticles = async () => {
 let discussionArticlesPromise:
   Promise<readonly DiscussionArticle[]> | undefined;
 
-/** GitHub Discussions から公開済み Articles を取得する。 */
-export const getDiscussionArticles = () => {
-  discussionArticlesPromise ??= loadDiscussionArticles();
+const getProductionDiscussionArticles = () => {
+  discussionArticlesPromise ??= fetchDiscussionArticles();
   return discussionArticlesPromise;
 };
+
+/** 開発時はローカルキャッシュ、本番ビルド時は GitHub Discussions から Articles を取得する。 */
+export const getDiscussionArticles = () =>
+  import.meta.env.DEV
+    ? getCachedDiscussionArticles()
+    : getProductionDiscussionArticles();
 
 /** Discussion の Markdown 本文を表示用 HTML に変換する。 */
 export const renderDiscussionArticleBody = async (

@@ -82,10 +82,29 @@ docker volume rm github-cli-private-state
 
 ### ローカル環境
 
-- `npm run build` と開発サーバーの実行には `GITHUB_TOKEN` が必要。
-- `GITHUB_TOKEN` には GitHub Discussions を読み取れるトークンを設定する。
-- `.env.example` を参考に、`GITHUB_TOKEN` を `.env` に設定する。
-- 禁止: `.env` やトークンを Git 管理しない。
+#### 記事の同期
+
+- 原則: 初回と記事の更新後に同期する。
+- 実行前に `.env` に `GITHUB_TOKEN` を設定する。
+- `npm run notes:sync` で GitHub Discussions の記事をローカルキャッシュに同期する。
+- 同期時に記事テンプレート、URL スラッグ、重複を検証する。
+
+#### 開発サーバー
+
+- ローカルキャッシュから記事を読み込む。
+- キャッシュがない場合は、同期を案内するエラーで停止する。
+- 同期後は Notes の再読み込みで最新のローカルキャッシュを表示する。
+
+#### ビルド
+
+- `npm run build` は GitHub API から記事を取得する。
+- 実行には `GITHUB_TOKEN` が必要。
+
+#### 環境変数
+
+- `GITHUB_TOKEN` には GitHub Discussions の読み取り権限が必要。
+- `.env` は `.env.example` を参考に設定する。
+- 禁止: ローカルキャッシュ、`.env`、トークンを Git 管理しない。
 
 ### 自動デプロイ
 
