@@ -1,0 +1,146 @@
+---
+import DiscussionArticleTitle from "./DiscussionArticleTitle.astro";
+import type { DiscussionArticle } from "../domain/discussionArticle";
+
+type NoteArticleNavigationArticle = Pick<
+  DiscussionArticle,
+  "id" | "titleParts"
+>;
+
+interface Props {
+  readonly previousArticle?: NoteArticleNavigationArticle;
+  readonly nextArticle?: NoteArticleNavigationArticle;
+}
+
+const { previousArticle, nextArticle } = Astro.props;
+---
+
+{
+  (previousArticle || nextArticle) && (
+    <nav class="note__navigation" aria-label="前後の記事">
+      {previousArticle && (
+        <a
+          class="note__navigation-link"
+          href={`${import.meta.env.BASE_URL}notes/${previousArticle.id}/`}
+        >
+          <span class="note__navigation-direction">
+            <span class="note__navigation-arrow" aria-hidden="true">
+              ←
+            </span>
+            前の記事
+          </span>
+          <span class="note__navigation-title">
+            <DiscussionArticleTitle parts={previousArticle.titleParts} />
+          </span>
+        </a>
+      )}
+      {nextArticle && (
+        <a
+          class="note__navigation-link note__navigation-link--next"
+          href={`${import.meta.env.BASE_URL}notes/${nextArticle.id}/`}
+        >
+          <span class="note__navigation-direction">
+            次の記事
+            <span class="note__navigation-arrow" aria-hidden="true">
+              →
+            </span>
+          </span>
+          <span class="note__navigation-title">
+            <DiscussionArticleTitle parts={nextArticle.titleParts} />
+          </span>
+        </a>
+      )}
+    </nav>
+  )
+}
+
+<style lang="scss">
+  .note__navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md);
+    padding-top: var(--space-md);
+    margin-top: var(--space-2xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .note__navigation-link {
+    display: grid;
+    width: fit-content;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 2.75rem;
+    padding-block: var(--space-xs);
+    padding-inline: var(--space-md);
+    color: var(--color-text);
+    text-align: left;
+
+    &:hover {
+      .note__navigation-title {
+        color: var(--color-accent-strong);
+        text-decoration-color: var(--color-accent-strong);
+      }
+    }
+  }
+
+  .note__navigation-link--next {
+    grid-column: 2;
+    justify-self: end;
+    text-align: right;
+  }
+
+  .note__navigation-direction {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-accent-strong);
+  }
+
+  .note__navigation-title {
+    display: -webkit-box;
+    min-width: 0;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    transition:
+      color 160ms ease,
+      text-decoration-color 160ms ease;
+    -webkit-box-orient: vertical;
+  }
+
+  @media (width <= 40rem) {
+    .note__navigation-arrow {
+      display: none;
+    }
+
+    .note__navigation {
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+
+    .note__navigation-link {
+      grid-column: 1;
+      justify-self: stretch;
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      text-align: left;
+      background: transparent;
+      border: 1px solid var(--color-border);
+    }
+
+    .note__navigation-link:hover,
+    .note__navigation-link:active {
+      color: var(--color-accent-strong);
+      background: transparent;
+      border-color: var(--color-accent-strong);
+    }
+
+    .note__navigation-title {
+      -webkit-line-clamp: 3;
+    }
+  }
+</style>
