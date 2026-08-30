@@ -171,7 +171,7 @@ const ogImageAlt = categoryOgp?.imageAlt;
 
 <style lang="scss">
   .note {
-    max-width: 50rem;
+    max-width: 56rem;
     margin-inline: auto;
   }
 
@@ -288,6 +288,7 @@ const ogImageAlt = categoryOgp?.imageAlt;
     font-size: 0.9375rem;
     border-spacing: 0;
     border-collapse: separate;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
   }
@@ -431,9 +432,12 @@ const ogImageAlt = categoryOgp?.imageAlt;
     border-top: 1px solid var(--color-border);
   }
 
-  @media (width <= 30rem) {
+  @media (width <= 40rem) {
     .note__content {
-      padding: var(--space-lg);
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
     }
   }
 </style>
