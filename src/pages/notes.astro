@@ -2,10 +2,11 @@
 import NoteMeta from "../components/NoteMeta.astro";
 import DiscussionArticleTitle from "../components/DiscussionArticleTitle.astro";
 import { getDiscussionArticles } from "../data/discussionArticles";
+import { sortDiscussionArticles } from "../domain/discussionArticleNavigation";
 import { site } from "../config/site";
 import Layout from "../layouts/Layout.astro";
 
-const publishedNotes = await getDiscussionArticles();
+const publishedNotes = sortDiscussionArticles(await getDiscussionArticles());
 ---
 
 <Layout

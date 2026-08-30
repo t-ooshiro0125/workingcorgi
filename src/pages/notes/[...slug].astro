@@ -3,24 +3,33 @@ import { noteCategoryOgps } from "../../config/noteCategoryOgps";
 import { site } from "../../config/site";
 import DiscussionArticleTitle from "../../components/DiscussionArticleTitle.astro";
 import GiscusComments from "../../components/GiscusComments.astro";
+import NoteArticleNavigation from "../../components/NoteArticleNavigation.astro";
 import NoteMeta from "../../components/NoteMeta.astro";
 import {
   getDiscussionArticles,
   renderDiscussionArticleBody,
 } from "../../data/discussionArticles";
-import type { DiscussionArticle } from "../../domain/discussionArticle";
+import {
+  createDiscussionArticleNavigation,
+  type DiscussionArticleNavigation,
+} from "../../domain/discussionArticleNavigation";
 import Layout from "../../layouts/Layout.astro";
 
 export async function getStaticPaths() {
-  const notes = await getDiscussionArticles();
+  const notes = createDiscussionArticleNavigation(
+    await getDiscussionArticles(),
+  );
 
-  return notes.map((note) => ({
-    params: { slug: note.id },
-    props: { note },
+  return notes.map((navigation) => ({
+    params: { slug: navigation.article.id },
+    props: { navigation },
   }));
 }
 
-const { note } = Astro.props as { readonly note: DiscussionArticle };
+const { navigation } = Astro.props as {
+  readonly navigation: DiscussionArticleNavigation;
+};
+const { article: note } = navigation;
 const discussionArticleHtml = await renderDiscussionArticleBody(note);
 const categoryOgp = noteCategoryOgps[note.category];
 const ogImage = categoryOgp.image;
@@ -56,6 +65,11 @@ const ogImageAlt = categoryOgp.imageAlt;
       class="note__content"
       data-note-code-blocks
       set:html={discussionArticleHtml}
+    />
+
+    <NoteArticleNavigation
+      previousArticle={navigation.previousArticle}
+      nextArticle={navigation.nextArticle}
     />
 
     <script>
