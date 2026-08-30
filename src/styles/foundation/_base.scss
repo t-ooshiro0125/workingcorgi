@@ -11,6 +11,9 @@ body {
   line-height: 1.7;
   color: var(--color-text);
   background: var(--color-background);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 h1,
