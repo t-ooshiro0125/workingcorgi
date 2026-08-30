@@ -23,8 +23,8 @@ export async function getStaticPaths() {
 const { note } = Astro.props as { readonly note: DiscussionArticle };
 const discussionArticleHtml = await renderDiscussionArticleBody(note);
 const categoryOgp = noteCategoryOgps[note.category];
-const ogImage = categoryOgp?.image;
-const ogImageAlt = categoryOgp?.imageAlt;
+const ogImage = categoryOgp.image;
+const ogImageAlt = categoryOgp.imageAlt;
 ---
 
 <Layout
