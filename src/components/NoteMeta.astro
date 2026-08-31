@@ -25,7 +25,12 @@ const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
 ---
 
 <p class="note-meta">
-  <span class="note-meta__category">{noteCategories[category].label}</span>
+  <a
+    class="note-meta__category"
+    href={`${import.meta.env.BASE_URL}notes/category/${category}/`}
+  >
+    {noteCategories[category].label}
+  </a>
 
   <time datetime={pubDate.toISOString()}>
     {showDateLabel ? "公開: " : ""}{dateFormatter.format(pubDate)}

@@ -1,0 +1,71 @@
+---
+import type { GetStaticPaths } from "astro";
+import NoteList from "../../../components/NoteList.astro";
+import { noteCategoryOgps } from "../../../config/noteCategoryOgps";
+import { noteCategories } from "../../../config/noteCategories";
+import { site } from "../../../config/site";
+import { getDiscussionArticles } from "../../../data/discussionArticles";
+import {
+  createDiscussionArticleCategoryPages,
+  type DiscussionArticleCategoryPage,
+} from "../../../domain/discussionArticleCategory";
+import Layout from "../../../layouts/Layout.astro";
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const categoryPages = createDiscussionArticleCategoryPages(
+    await getDiscussionArticles(),
+  );
+
+  return categoryPages.map((categoryPage) => ({
+    params: { category: categoryPage.category },
+    props: { categoryPage },
+  }));
+};
+
+const { categoryPage } = Astro.props as {
+  readonly categoryPage: DiscussionArticleCategoryPage;
+};
+const { category } = categoryPage;
+const categoryLabel = noteCategories[category].label;
+const categoryOgp = noteCategoryOgps[category];
+---
+
+<Layout
+  title={`${categoryLabel} の Notes | ${site.name}`}
+  description={`${categoryLabel} カテゴリの Notes 一覧です。`}
+  ogImage={categoryOgp.image}
+  ogImageAlt={categoryOgp.imageAlt}
+>
+  <div class="notes-category">
+    <a
+      class="notes-category__back-link"
+      href={`${import.meta.env.BASE_URL}notes/`}
+    >
+      ← Notes 一覧へ戻る
+    </a>
+
+    <header class="page__hero page__hero--narrow">
+      <p class="page__eyebrow">MY NOTES</p>
+      <h1 class="page__title">{categoryLabel}</h1>
+      <p class="page__lead">{categoryLabel} カテゴリの記事一覧です。</p>
+    </header>
+
+    <NoteList articles={categoryPage.articles} />
+  </div>
+</Layout>
+
+<style lang="scss">
+  .notes-category {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+
+  .notes-category__back-link {
+    display: inline-flex;
+    width: fit-content;
+    margin-bottom: calc(-1 * var(--space-lg));
+    font-size: 0.875rem;
+    color: var(--color-link);
+    text-underline-offset: 0.18em;
+  }
+</style>
