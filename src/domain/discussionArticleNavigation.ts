@@ -4,6 +4,7 @@ export interface DiscussionArticleNavigation {
   readonly article: DiscussionArticle;
   readonly previousArticle?: DiscussionArticle;
   readonly nextArticle?: DiscussionArticle;
+  readonly relatedArticles: readonly DiscussionArticle[];
 }
 
 /** 公開日、同日の場合は Discussion 番号の降順で記事を並べ替える。 */
@@ -26,5 +27,12 @@ export const createDiscussionArticleNavigation = (
     article,
     previousArticle: orderedArticles[index - 1],
     nextArticle: orderedArticles[index + 1],
+    relatedArticles: orderedArticles
+      .filter(
+        (candidate) =>
+          candidate.discussionNumber !== article.discussionNumber &&
+          candidate.category === article.category,
+      )
+      .slice(0, 3),
   }));
 };

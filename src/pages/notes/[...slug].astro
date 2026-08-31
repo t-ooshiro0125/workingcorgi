@@ -4,6 +4,7 @@ import { site } from "../../config/site";
 import DiscussionArticleTitle from "../../components/DiscussionArticleTitle.astro";
 import GiscusComments from "../../components/GiscusComments.astro";
 import NoteArticleNavigation from "../../components/NoteArticleNavigation.astro";
+import NoteRelatedArticles from "../../components/NoteRelatedArticles.astro";
 import NoteMeta from "../../components/NoteMeta.astro";
 import {
   getDiscussionArticles,
@@ -71,6 +72,8 @@ const ogImageAlt = categoryOgp.imageAlt;
       previousArticle={navigation.previousArticle}
       nextArticle={navigation.nextArticle}
     />
+
+    <NoteRelatedArticles relatedArticles={navigation.relatedArticles} />
 
     <script>
       // Code block enhancements

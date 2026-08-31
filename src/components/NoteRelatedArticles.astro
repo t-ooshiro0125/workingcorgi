@@ -1,0 +1,106 @@
+---
+import DiscussionArticleTitle from "./DiscussionArticleTitle.astro";
+import type { DiscussionArticle } from "../domain/discussionArticle";
+
+type NoteRelatedArticlesArticle = Pick<
+  DiscussionArticle,
+  "id" | "pubDate" | "titleParts"
+>;
+
+interface Props {
+  readonly relatedArticles: readonly NoteRelatedArticlesArticle[];
+}
+
+const { relatedArticles } = Astro.props as Props;
+const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+{
+  relatedArticles.length > 0 && (
+    <section
+      class="note-related-articles"
+      aria-labelledby="related-articles-title"
+    >
+      <h2 id="related-articles-title" class="note-related-articles__title">
+        関連記事
+      </h2>
+
+      <ul class="note-related-articles__list" role="list">
+        {relatedArticles.map((article) => (
+          <li class="note-related-articles__item">
+            <time
+              class="note-related-articles__date"
+              datetime={article.pubDate.toISOString()}
+            >
+              {dateFormatter.format(article.pubDate)}
+            </time>
+            <a
+              class="note-related-articles__link"
+              href={`${import.meta.env.BASE_URL}notes/${article.id}/`}
+            >
+              <DiscussionArticleTitle parts={article.titleParts} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style lang="scss">
+  .note-related-articles {
+    padding-top: var(--space-md);
+    margin-top: var(--space-2xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .note-related-articles__title {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .note-related-articles__list {
+    padding: 0;
+    margin: var(--space-sm) 0 0;
+    list-style: none;
+  }
+
+  .note-related-articles__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--space-sm);
+    align-items: baseline;
+    padding: var(--space-2xs) 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .note-related-articles__date {
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .note-related-articles__link {
+    min-width: 0;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+    text-decoration-line: underline;
+    text-underline-offset: 0.18em;
+    transition: color 160ms ease;
+
+    &:is(:hover, :focus-visible) {
+      color: var(--color-accent-strong);
+    }
+  }
+
+  @media (width <= 40rem) {
+    .note-related-articles__item {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
