@@ -5,6 +5,16 @@ import {
 
 const rawChangelogEntries = [
   {
+    date: "2026-08-31",
+    title: "Notes のカテゴリ別一覧を追加",
+    description:
+      "Notes のカテゴリから、同じカテゴリの記事をまとめて探せるようになりました。",
+    link: {
+      kind: "internal",
+      path: "notes/",
+    },
+  },
+  {
     date: "2026-08-24",
     title: "アクセス解析を追加",
     description:
