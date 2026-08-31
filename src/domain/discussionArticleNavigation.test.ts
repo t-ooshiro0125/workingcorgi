@@ -54,21 +54,96 @@ describe("createDiscussionArticleNavigation", () => {
     expect(navigationByArticleId.get(newest.id)).toEqual({
       article: newest,
       nextArticle: middle,
+      relatedArticles: [middle, oldest],
     });
     expect(navigationByArticleId.get(middle.id)).toEqual({
       article: middle,
       previousArticle: newest,
       nextArticle: oldest,
+      relatedArticles: [newest, oldest],
     });
     expect(navigationByArticleId.get(oldest.id)).toEqual({
       article: oldest,
       previousArticle: middle,
+      relatedArticles: [newest, middle],
     });
   });
 
   it("記事が1件だけの場合は前後記事を設定しない", () => {
     const article = createArticle("only", "2026-08-26", 1);
 
-    expect(createDiscussionArticleNavigation([article])).toEqual([{ article }]);
+    expect(createDiscussionArticleNavigation([article])).toEqual([
+      { article, relatedArticles: [] },
+    ]);
+  });
+
+  it("現在の記事と異なる Notes カテゴリの記事を関連記事から除外する", () => {
+    const current = createArticle("current", "2026-08-26", 1);
+    const sameCategory = createArticle("same-category", "2026-08-27", 2);
+    const otherCategory = {
+      ...createArticle("other-category", "2026-08-28", 3),
+      category: "note" as const,
+    };
+
+    const navigation = createDiscussionArticleNavigation([
+      current,
+      sameCategory,
+      otherCategory,
+    ]).find(({ article }) => article.id === current.id);
+
+    expect(navigation?.relatedArticles).toEqual([sameCategory]);
+  });
+
+  it("同じカテゴリの候補は公開順で最大3件返す", () => {
+    const current = createArticle("current", "2026-08-20", 1);
+    const oldest = createArticle("oldest", "2026-08-21", 2);
+    const lowerNumber = createArticle("lower-number", "2026-08-23", 3);
+    const higherNumber = createArticle("higher-number", "2026-08-23", 4);
+    const newest = createArticle("newest", "2026-08-24", 5);
+
+    const navigation = createDiscussionArticleNavigation([
+      current,
+      oldest,
+      lowerNumber,
+      higherNumber,
+      newest,
+    ]).find(({ article }) => article.id === current.id);
+
+    expect(navigation?.relatedArticles).toEqual([
+      newest,
+      higherNumber,
+      lowerNumber,
+    ]);
+  });
+
+  it("同じカテゴリの候補が1件または2件の場合は存在する記事だけ返す", () => {
+    const current = createArticle("current", "2026-08-20", 1);
+    const one = createArticle("one", "2026-08-21", 2);
+    const two = createArticle("two", "2026-08-22", 3);
+
+    expect(
+      createDiscussionArticleNavigation([current, one]).find(
+        ({ article }) => article.id === current.id,
+      )?.relatedArticles,
+    ).toEqual([one]);
+    expect(
+      createDiscussionArticleNavigation([current, one, two]).find(
+        ({ article }) => article.id === current.id,
+      )?.relatedArticles,
+    ).toEqual([two, one]);
+  });
+
+  it("同じカテゴリの候補がない場合は空配列を返す", () => {
+    const current = createArticle("current", "2026-08-26", 1);
+    const otherCategory = {
+      ...createArticle("other-category", "2026-08-27", 2),
+      category: "devlog" as const,
+    };
+
+    expect(
+      createDiscussionArticleNavigation([current, otherCategory]).find(
+        ({ article }) => article.id === current.id,
+      )?.relatedArticles,
+    ).toEqual([]);
   });
 });
