@@ -1,0 +1,82 @@
+---
+import type { DiscussionArticle } from "../domain/discussionArticle";
+import DiscussionArticleTitle from "./DiscussionArticleTitle.astro";
+import NoteMeta from "./NoteMeta.astro";
+
+type NoteListArticle = Pick<
+  DiscussionArticle,
+  "id" | "category" | "pubDate" | "titleParts" | "description"
+>;
+
+interface Props {
+  articles: readonly NoteListArticle[];
+}
+
+const { articles } = Astro.props as Props;
+---
+
+<ul class="note-list">
+  {
+    articles.map((note) => (
+      <li class="note-list__item">
+        <article class="note-list__article">
+          <NoteMeta category={note.category} pubDate={note.pubDate} />
+
+          <h2 class="note-list__title">
+            <a
+              class="note-list__link"
+              href={`${import.meta.env.BASE_URL}notes/${note.id}/`}
+            >
+              <DiscussionArticleTitle parts={note.titleParts} />
+            </a>
+          </h2>
+
+          <p class="note-list__description">{note.description}</p>
+        </article>
+      </li>
+    ))
+  }
+</ul>
+
+<style lang="scss">
+  .note-list {
+    display: grid;
+    gap: var(--space-md);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .note-list__article {
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 0.25rem solid var(--color-mustard);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    transition:
+      border-color 160ms ease,
+      transform 160ms ease;
+
+    &:hover,
+    &:focus-within {
+      border-left-color: var(--color-accent-strong);
+      transform: translateY(-0.125rem);
+    }
+  }
+
+  .note-list__title {
+    margin: 0;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    line-height: 1.4;
+  }
+
+  .note-list__link {
+    color: var(--color-text);
+  }
+
+  .note-list__description {
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-muted);
+  }
+</style>
