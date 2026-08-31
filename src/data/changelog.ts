@@ -5,6 +5,12 @@ import {
 
 const rawChangelogEntries = [
   {
+    date: "2026-08-31",
+    title: "Notes の記事導線を改善",
+    description:
+      "記事詳細から、前後の記事や同じカテゴリの関連記事へ移動できるようにしました。",
+  },
+  {
     date: "2026-08-24",
     title: "アクセス解析を追加",
     description:
