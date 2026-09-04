@@ -40,6 +40,7 @@ interface HtmlNode {
   readonly tagName?: string;
   readonly properties?: Record<string, unknown>;
   readonly children?: HtmlNode[];
+  readonly value?: string;
 }
 
 const repository = { owner: "t-ooshiro0125", name: "workingcorgi" };
@@ -93,8 +94,117 @@ const makeCodeBlockKeyboardScrollable = (node: HtmlNode): HtmlNode => {
   };
 };
 
+interface QuoteSource {
+  readonly href: string;
+  readonly url: URL;
+}
+
+const isText = (node: HtmlNode) => node.type === "text";
+
+const isWhitespaceText = (node: HtmlNode) =>
+  isText(node) && !node.value?.trim();
+
+const findLastMeaningfulChild = (children: HtmlNode[]) =>
+  children.findLast((child) => !isWhitespaceText(child));
+
+const hasOnlyHrefProperty = (properties: Record<string, unknown> | undefined) =>
+  Object.keys(properties ?? {}).length === 1 &&
+  typeof properties?.href === "string";
+
+const parseQuoteSourceParagraph = (node: HtmlNode): QuoteSource | undefined => {
+  if (!isElement(node, "p") || node.children?.length !== 2) {
+    return;
+  }
+
+  const [prefix, link] = node.children;
+
+  if (
+    !isText(prefix) ||
+    !/^引用:[ \t]*$/u.test(prefix.value ?? "") ||
+    !isElement(link, "a") ||
+    link.children?.length !== 1 ||
+    !hasOnlyHrefProperty(link.properties)
+  ) {
+    return;
+  }
+
+  const [linkText] = link.children;
+  const href = link.properties?.href;
+
+  if (
+    !isText(linkText) ||
+    typeof href !== "string" ||
+    href !== linkText.value ||
+    !linkText.value.startsWith("https://")
+  ) {
+    return;
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(href);
+  } catch {
+    return;
+  }
+
+  return url.protocol === "https:" ? { href, url } : undefined;
+};
+
+const getQuoteSourceLabel = (sourceUrl: URL) => {
+  if (sourceUrl.hostname !== "x.com") {
+    return `${sourceUrl.hostname} のリンク`;
+  }
+
+  const [, username, resource, postId] = sourceUrl.pathname.split("/");
+
+  return username && resource === "status" && postId
+    ? `@${username} のポスト`
+    : "Xのポスト";
+};
+
+const createQuoteSourceNode = (
+  node: HtmlNode,
+  source: QuoteSource,
+): HtmlNode => ({
+  ...node,
+  properties: {
+    ...node.properties,
+    className: ["note__quote-source"],
+  },
+  children: [
+    { type: "text", value: "—\u00a0" },
+    {
+      type: "element",
+      tagName: "a",
+      properties: { href: source.href },
+      children: [{ type: "text", value: getQuoteSourceLabel(source.url) }],
+    },
+  ],
+});
+
+const formatQuoteSource = (node: HtmlNode): HtmlNode => {
+  if (!isElement(node, "blockquote")) {
+    return node;
+  }
+
+  const lastChild = findLastMeaningfulChild(node.children ?? []);
+  const source = lastChild && parseQuoteSourceParagraph(lastChild);
+
+  if (!lastChild || !source) {
+    return node;
+  }
+
+  return {
+    ...node,
+    children: node.children?.map((child) =>
+      child === lastChild ? createQuoteSourceNode(child, source) : child,
+    ),
+  };
+};
+
 const enhanceNoteHtmlNode = (node: HtmlNode) =>
-  makeCodeBlockKeyboardScrollable(wrapTable(node));
+  formatQuoteSource(makeCodeBlockKeyboardScrollable(wrapTable(node)));
 
 const transformHtmlNodes = (
   children: HtmlNode[],

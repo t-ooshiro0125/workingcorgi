@@ -298,6 +298,18 @@ const ogImageAlt = categoryOgp.imageAlt;
     margin-block: 0;
   }
 
+  .note__content :global(blockquote .note__quote-source) {
+    margin-top: var(--space-sm);
+    font-size: 0.875rem;
+    color: color-mix(in srgb, var(--color-text-muted) 95%, var(--color-text));
+    text-align: right;
+  }
+
+  .note__content :global(blockquote .note__quote-source a) {
+    color: inherit;
+    text-decoration-thickness: 0.075em;
+  }
+
   .note__content :global(table) {
     width: 100%;
     min-width: 0;

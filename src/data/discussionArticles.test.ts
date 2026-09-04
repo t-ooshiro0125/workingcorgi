@@ -68,6 +68,11 @@ const importArticles = async (responses: readonly Response[]) => {
   return { articles: await import("./discussionArticles"), fetchMock };
 };
 
+const renderArticleBody = async (body: string) => {
+  const { renderDiscussionArticleBody } = await import("./discussionArticles");
+  return renderDiscussionArticleBody({ body });
+};
+
 afterEach(() => {
   vi.doUnmock("./discussionArticlesCache");
   vi.unstubAllEnvs();
@@ -226,11 +231,9 @@ describe("getDiscussionArticles", () => {
 
 describe("renderDiscussionArticleBody", () => {
   it("wraps Markdown tables in a scrollable region", async () => {
-    const { renderDiscussionArticleBody } =
-      await import("./discussionArticles");
-    const html = await renderDiscussionArticleBody({
-      body: "| Name | Value |\n| --- | --- |\n| Long name | Content |",
-    });
+    const html = await renderArticleBody(
+      "| Name | Value |\n| --- | --- |\n| Long name | Content |",
+    );
 
     expect(html).toMatch(/<div class="note__table-scroll"[^>]*>\s*<table>/);
     expect(html).toContain('tabindex="0"');
@@ -241,12 +244,121 @@ describe("renderDiscussionArticleBody", () => {
   });
 
   it("makes the code block scroll region keyboard focusable", async () => {
-    const { renderDiscussionArticleBody } =
-      await import("./discussionArticles");
-    const html = await renderDiscussionArticleBody({
-      body: "```ts\nconst longLine = 'Content';\n```",
-    });
+    const html = await renderArticleBody(
+      "```ts\nconst longLine = 'Content';\n```",
+    );
 
     expect(html).toMatch(/<pre(?![^>]*tabindex)[^>]*>\s*<code tabindex="0">/);
+  });
+
+  it("formats an X post quote source", async () => {
+    const html = await renderArticleBody(
+      "> 引用本文\n>\n> 引用: https://x.com/working_corgi/status/1234567890",
+    );
+
+    expect(html).toContain("<p>引用本文</p>");
+    expect(html).toContain(
+      '<p class="note__quote-source">—\u00a0<a href="https://x.com/working_corgi/status/1234567890">@working_corgi のポスト</a></p>',
+    );
+  });
+
+  it("formats a non-X HTTPS quote source with its hostname", async () => {
+    const html = await renderArticleBody(
+      "> 引用本文\n>\n> 引用: https://example.com/articles/1",
+    );
+
+    expect(html).toContain(
+      '<p class="note__quote-source">—\u00a0<a href="https://example.com/articles/1">example.com のリンク</a></p>',
+    );
+  });
+
+  it("leaves quote sources outside the target format unchanged", async () => {
+    const html = await renderArticleBody(
+      "> 引用: http://example.com\n\n> 通常の引用 https://example.com",
+    );
+
+    expect(html).not.toContain("note__quote-source");
+    expect(html).toContain(
+      '<a href="http://example.com">http://example.com</a>',
+    );
+    expect(html).toContain(
+      '<a href="https://example.com">https://example.com</a>',
+    );
+  });
+
+  it("uses a generic label when an X post URL has no username", async () => {
+    const html = await renderArticleBody(
+      "> 引用本文\n>\n> 引用: https://x.com/status/1234567890",
+    );
+
+    expect(html).toContain(
+      '<p class="note__quote-source">—\u00a0<a href="https://x.com/status/1234567890">Xのポスト</a></p>',
+    );
+  });
+
+  it.each([
+    ["URL側がインラインコード", "> 引用: `https://example.com`"],
+    ["URL側が強調", "> 引用: **https://example.com**"],
+    [
+      "表示 URL と href が異なるリンク",
+      "> 引用: [https://example.com](https://different.example.com)",
+    ],
+  ])("%s の出典候補は変換しない", async (_label, body) => {
+    const html = await renderArticleBody(body);
+
+    expect(html).not.toContain("note__quote-source");
+  });
+
+  it("タイトル付き Markdown リンクは元のリンク情報を保持する", async () => {
+    const html = await renderArticleBody(
+      '> 引用: [https://example.com](https://example.com "出典")',
+    );
+
+    expect(html).not.toContain("note__quote-source");
+    expect(html).toContain(
+      '<a href="https://example.com" title="出典">https://example.com</a>',
+    );
+  });
+
+  it("引用: と URL が別行の場合は変換しない", async () => {
+    const html = await renderArticleBody("> 引用:\n> https://example.com");
+
+    expect(html).not.toContain("note__quote-source");
+  });
+
+  it("https:// で始まらないリンク文字列は変換しない", async () => {
+    const html = await renderArticleBody(
+      "> 引用: [https:example.com](https:example.com)",
+    );
+
+    expect(html).not.toContain("note__quote-source");
+  });
+
+  it.each([
+    ["水平線", "> 引用: https://example.com\n>\n> ---"],
+    ["空のコードブロック", "> 引用: https://example.com\n>\n> ```\n> ```"],
+  ])("出典段落の後ろに %s がある場合は変換しない", async (_label, body) => {
+    const html = await renderArticleBody(body);
+
+    expect(html).not.toContain("note__quote-source");
+  });
+
+  it("X ポスト URL のクエリ、フラグメント、後続パスを許容する", async () => {
+    const html = await renderArticleBody(
+      "> 引用: https://x.com/working_corgi/status/id/extra?source=note#quote",
+    );
+
+    expect(html).toContain(
+      '<a href="https://x.com/working_corgi/status/id/extra?source=note#quote">@working_corgi のポスト</a>',
+    );
+  });
+
+  it.each([
+    ["www.x.com", "https://www.x.com/working_corgi/status/123"],
+    ["twitter.com", "https://twitter.com/working_corgi/status/123"],
+  ])("%s は通常の HTTPS リンクとして扱う", async (hostname, url) => {
+    const html = await renderArticleBody(`> 引用: ${url}`);
+
+    expect(html).toContain(`<a href="${url}">${hostname} のリンク</a>`);
   });
 });
