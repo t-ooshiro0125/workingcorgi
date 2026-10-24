@@ -3,7 +3,8 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:5-24-trixie",
   "mounts": [
     "source=codex-private-state,target=/home/node/.codex,type=volume",
-    "source=github-cli-private-state,target=/home/node/.config/gh,type=volume"
+    "source=github-cli-private-state,target=/home/node/.config/gh,type=volume",
+    "source=${localEnv:HOME}/.agents/skills,target=/home/node/.agents/skills,type=bind,readonly"
   ],
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
