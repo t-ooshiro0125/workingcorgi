@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
     "notes:sync": "tsx --env-file-if-exists=.env scripts/sync-notes.ts",
+    "notes:revision": "tsx scripts/prepare-note-revision.ts",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
