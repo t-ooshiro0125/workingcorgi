@@ -95,6 +95,17 @@ docker volume rm github-cli-private-state
 - `npm run notes:sync` で GitHub Discussions の記事をローカルキャッシュに同期する。
 - 同期時に記事テンプレート、URL スラッグ、重複を検証する。
 
+#### 公開済み記事の修正準備
+
+- `npm run notes:sync` で記事キャッシュを同期してから、次を実行する。
+
+  ```sh
+  npm run notes:revision -- <URLスラッグ>
+  ```
+
+- 指定した記事を `src/content/revisions/<URLスラッグ>.md` に書き出す。既存ファイルは上書きしない。
+- Markdown の修正はサイトや GitHub Discussions に自動反映されない。
+
 #### 開発サーバー
 
 - ローカルキャッシュから記事を読み込む。
@@ -173,18 +184,23 @@ docker volume rm github-cli-private-state
 - 厳守: 利用者が許可するまで計測しない。
 - 同意はブラウザに保存し、Privacy Policy の「計測のカスタマイズ」から変更できる。
 
-## ブランチと Pull Request
+## ブランチ
 
 - `main` への直接 push はしない。Issue に対応する変更はブランチで行い、Pull Request を通して `main` へマージする。
 
 ### 命名規則
 
-| 作業                     | ブランチ名                      | 例                     |
-| ------------------------ | ------------------------------- | ---------------------- |
-| Issue に対応する変更     | `<種類>/<Issue番号>-<短い説明>` | `feat/10-about-page`   |
-| Issue を作らない文書変更 | `docs/<短い説明>`               | `docs/branch-workflow` |
+新しい作業ブランチは、Issue がある場合は `<type>/<issue-number>-<description>`、ない場合は `<type>/<description>` とします。既存ブランチの改名は求めません。
 
-- `<種類>` には、[コミットメッセージ](conventions.md#コミットメッセージ)で定めた種類を使う。
+`type` は次の表から主な変更目的に合うものを選びます。`description` は作業内容が分かる簡潔な英語にし、英小文字・数字・ハイフンで記述します。Issue 番号には `#` を付けません。複数の Issue を扱う場合は主な Issue の番号を使い、関連する Issue を PR 本文に列挙します。ブランチ作成のためだけに Issue を作る必要はありません。
+
+| type       | 用途                             | Issue ありの例                     | Issue なしの例                  |
+| ---------- | -------------------------------- | ---------------------------------- | ------------------------------- |
+| `feat`     | スキルや機能の追加               | `feat/12-add-review-skill`         | `feat/add-review-skill`         |
+| `fix`      | 誤動作や誤った指示の修正         | `fix/13-handle-broken-links`       | `fix/handle-broken-links`       |
+| `docs`     | 文書・利用ガイド・開発規約の整備 | `docs/7-development-rules`         | `docs/development-rules`        |
+| `refactor` | 挙動を変えないコードの整理       | `refactor/14-simplify-link-checks` | `refactor/simplify-link-checks` |
+| `chore`    | その他の保守作業や設定変更       | `chore/15-update-tool-config`      | `chore/update-tool-config`      |
 
 ### Issue 用ブランチの作成
 
@@ -193,13 +209,13 @@ docker volume rm github-cli-private-state
   - 作業ツリーとインデックスがクリーンである。
   - ローカルの `main` を fast-forward のみで更新し、`origin/main` と一致している。
 - 停止条件: 前提を満たせない場合はブランチを作成せず、原因を解消してからやり直す。
-- コマンド例:
+- コマンド例（作業場所として現在のフォルダを選択し、ブランチ切替の確認が済んでいる場合）:
 
   ```sh
   git status --short
   git switch main
   git pull --ff-only origin main
-  git switch -c <種類>/<Issue番号>-<短い説明>
+  git switch -c <type>/<issue-number>-<description>
   ```
 
 ### Push と Pull Request
